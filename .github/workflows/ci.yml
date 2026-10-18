@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: musfyr_test
+          POSTGRES_USER: musfyr
+          POSTGRES_PASSWORD: musfyr
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U musfyr" --health-interval 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21", cache: maven }
+      - name: Unit + integration tests
+        run: mvn -B verify
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  e2e:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: musfyr
+          POSTGRES_USER: musfyr
+          POSTGRES_PASSWORD: musfyr
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U musfyr" --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21", cache: maven }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - name: Start backend (dev profile with seed data)
+        working-directory: backend
+        run: |
+          mvn -B -q -DskipTests package
+          nohup java -jar target/print-backend-*.jar > backend.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf localhost:8080/actuator/health && break; sleep 2; done
+      - name: Build and start frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm run build
+          cp -r .next/static .next/standalone/.next/static
+          nohup env PORT=3000 API_INTERNAL_URL=http://localhost:8080 node .next/standalone/server.js > frontend.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf localhost:3000/robots.txt && break; sleep 1; done
+      - name: Playwright
+        working-directory: frontend
+        run: npm run e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-report
+          path: |
+            frontend/playwright-report
+            backend/backend.log
+            frontend/frontend.log
