@@ -7,7 +7,7 @@ The working name **musfyr print** is configuration, not code.
 | What | Backend (`application.yml` / env) | Frontend (build-time env) |
 | --- | --- | --- |
 | Name | `BRAND_NAME` | `NEXT_PUBLIC_BRAND_NAME` (words after the first render in the logo pill) |
-| Tagline | `BRAND_TAGLINE` | `NEXT_PUBLIC_BRAND_TAGLINE`, `NEXT_PUBLIC_BRAND_HERO_TITLE` |
+| Tagline & hero copy | `BRAND_TAGLINE` | `frontend/src/i18n/messages/{pl,en}.ts` (`brand.tagline`, `hero.*`) |
 | Contact | `BRAND_SUPPORT_EMAIL`, `BRAND_SUPPORT_PHONE`, `BRAND_ADDRESS` | `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_SUPPORT_PHONE`, `NEXT_PUBLIC_COMPANY_ADDRESS` |
 | Social links | `BRAND_SOCIAL_*` | `NEXT_PUBLIC_SOCIAL_*` (empty = hidden) |
 | Site URL (SEO, sitemap) | – | `NEXT_PUBLIC_SITE_URL` |
@@ -17,11 +17,23 @@ The working name **musfyr print** is configuration, not code.
   the Playwright axe test fails the build otherwise.
 * `NEXT_PUBLIC_*` values are compiled into the client bundle, so rebuild the frontend image after changing them.
 
+## Languages (Polish + English)
+
+* URLs are prefixed: `/pl/...` and `/en/...`. `src/proxy.ts` redirects un-prefixed URLs using the saved choice
+  (`NEXT_LOCALE` cookie), then `Accept-Language`, then Polish.
+* **Interface text:** `frontend/src/i18n/messages/en.ts` (source of truth, typed) and `pl.ts`. A unit test fails if a
+  Polish key is missing. Polish plurals (1 produkt / 3 produkty / 5 produktów) use `Intl.PluralRules`.
+* **Catalogue content:** base columns hold English; translations live in each row's `i18n` JSONB column
+  (`{"pl": {"name": "…"}}`). The API picks the language from `Accept-Language` and falls back to English.
+  Validation errors are also returned in the request language.
+* **Adding a language** (e.g. German): add `de` to `locales` in `src/i18n/config.ts`, create `messages/de.ts`,
+  add `de-DE` to `SUPPORTED_LOCALES`, and fill `i18n.de` for catalogue rows. No schema change.
+* Legal pages per language: `frontend/src/content/pages.ts`.
+
 ## Currency & locale
 
 * `DEFAULT_CURRENCY` (backend) is used for new products when none is given; each product stores its own currency.
-* `NEXT_PUBLIC_DEFAULT_LOCALE` controls number/currency formatting (`pl-PL` → `59,00 zł`).
-* `NEXT_PUBLIC_CONTENT_LANGUAGE` sets `<html lang>` until translations ship (Phase 5).
+* Number/currency formatting follows the UI language (`pl` → `59,00 zł`, `en` → `PLN 59.00`).
 * Multi-currency *pricing* (separate price lists per market rather than FX conversion) is designed into the Phase 3
   pricing service.
 

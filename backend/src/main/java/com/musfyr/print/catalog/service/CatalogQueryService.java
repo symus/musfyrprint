@@ -46,20 +46,28 @@ public class CatalogQueryService {
     private final JdbcClient jdbc;
     private final String defaultCurrency;
 
+    /** SQL for a translated column: the requested language if present, else the base column. */
+    static String tr(String alias, String field) {
+        return "COALESCE(" + alias + ".i18n -> :lang ->> '" + field + "', " + alias + "." + field + ")";
+    }
+
     public CatalogQueryService(JdbcClient jdbc, AppProperties props) {
         this.jdbc = jdbc;
         this.defaultCurrency = props.commerce().defaultCurrency();
     }
 
-    public PageResponse<ProductSummary> search(ProductSearchCriteria c) {
+    public PageResponse<ProductSummary> search(ProductSearchCriteria c, String lang) {
         Map<String, Object> params = new LinkedHashMap<>();
+        params.put("lang", lang);
         StringBuilder where = new StringBuilder("p.status = 'ACTIVE' AND cat.active");
         String tsQuery = SearchQueries.prefixTsQuery(c.q());
 
         if (StringUtils.hasText(c.q())) {
             params.put("q", c.q().trim());
             params.put("like", SearchQueries.likePattern(c.q()));
-            where.append(" AND (p.name ILIKE :like OR similarity(p.name, :q) > 0.25 OR EXISTS (SELECT 1 FROM unnest(p.tags) t WHERE t ILIKE :like)");
+            where.append(" AND (p.name ILIKE :like OR " + tr("p", "name") + " ILIKE :like"
+                    + " OR similarity(" + tr("p", "name") + ", :q) > 0.25"
+                    + " OR EXISTS (SELECT 1 FROM unnest(p.tags) t WHERE t ILIKE :like)");
             if (tsQuery != null) {
                 params.put("tsq", tsQuery);
                 where.append(" OR p.search_vector @@ to_tsquery('simple', :tsq)");
@@ -108,7 +116,7 @@ public class CatalogQueryService {
         String orderBy;
         if (c.sort() == ProductSearchCriteria.Sort.RELEVANCE && params.containsKey("q")) {
             orderBy = (tsQuery != null ? "ts_rank(p.search_vector, to_tsquery('simple', :tsq)) DESC, " : "")
-                    + "similarity(p.name, :q) DESC";
+                    + "similarity(" + tr("p", "name") + ", :q) DESC";
         } else {
             orderBy = (c.sort() == null || c.sort().orderBy == null ? ProductSearchCriteria.Sort.FEATURED : c.sort()).orderBy;
         }
@@ -120,52 +128,58 @@ public class CatalogQueryService {
         params.put("offset", (long) c.page() * c.size());
         List<ProductSummary> items = total == 0 ? List.of() : withColors(bind(jdbc.sql(SUMMARY_SELECT + " WHERE " + where
                 + " ORDER BY " + orderBy + ", p.id LIMIT :limit OFFSET :offset"), params)
-                .query(this::mapSummary).list());
+                .query(this::mapSummary).list(), lang);
         return PageResponse.of(items, c.page(), c.size(), total);
     }
 
     @Cacheable(CACHE_CATEGORIES)
-    public List<CategoryView> categories() {
-        return jdbc.sql("""
-                SELECT c.id, c.slug, c.name, c.description, c.product_family, c.accent_hex, parent.slug AS parent_slug,
+    public List<CategoryView> categories(String lang) {
+        return jdbc.sql("SELECT c.id, c.slug, " + tr("c", "name") + " AS name, " + tr("c", "description")
+                + " AS description, " + """
+                c.product_family, c.accent_hex, parent.slug AS parent_slug,
                        (SELECT count(*) FROM products p WHERE p.category_id = c.id AND p.status = 'ACTIVE') AS product_count
                 FROM categories c LEFT JOIN categories parent ON parent.id = c.parent_id
                 WHERE c.active ORDER BY c.sort_order, c.name""")
+                .param("lang", lang)
                 .query((rs, i) -> new CategoryView(rs.getObject("id", UUID.class), rs.getString("slug"),
                         rs.getString("name"), rs.getString("description"), rs.getString("product_family"),
                         rs.getString("accent_hex"), rs.getString("parent_slug"), rs.getLong("product_count")))
                 .list();
     }
 
-    public CategoryView category(String slug) {
-        return categories().stream().filter(c -> c.slug().equals(slug)).findFirst()
+    public CategoryView category(String slug, String lang) {
+        return categories(lang).stream().filter(c -> c.slug().equals(slug)).findFirst()
                 .orElseThrow(() -> new NotFoundException("Category", slug));
     }
 
     @Cacheable(CACHE_COLLECTIONS)
-    public List<CollectionView> collections() {
-        return jdbc.sql("""
-                SELECT col.id, col.slug, col.name, col.description, col.kind, col.accent_hex,
+    public List<CollectionView> collections(String lang) {
+        return jdbc.sql("SELECT col.id, col.slug, " + tr("col", "name") + " AS name, " + tr("col", "description")
+                + " AS description, " + """
+                col.kind, col.accent_hex,
                        (SELECT count(*) FROM collection_products cp JOIN products p ON p.id = cp.product_id
                         WHERE cp.collection_id = col.id AND p.status = 'ACTIVE') AS product_count
                 FROM collections col WHERE col.active ORDER BY col.sort_order, col.name""")
+                .param("lang", lang)
                 .query((rs, i) -> new CollectionView(rs.getObject("id", UUID.class), rs.getString("slug"),
                         rs.getString("name"), rs.getString("description"), rs.getString("kind"),
                         rs.getString("accent_hex"), rs.getLong("product_count")))
                 .list();
     }
 
-    public CollectionView collection(String slug) {
-        return collections().stream().filter(c -> c.slug().equals(slug)).findFirst()
+    public CollectionView collection(String slug, String lang) {
+        return collections(lang).stream().filter(c -> c.slug().equals(slug)).findFirst()
                 .orElseThrow(() -> new NotFoundException("Collection", slug));
     }
 
     @Cacheable(CACHE_FACETS)
-    public Facets facets() {
-        List<ColorView> colors = jdbc.sql("""
-                SELECT DISTINCT co.code, co.name, co.hex, co.sort_order FROM colors co
+    public Facets facets(String lang) {
+        List<ColorView> colors = jdbc.sql("SELECT DISTINCT co.code, " + tr("co", "name") + " AS name, co.hex, co.sort_order"
+                + """
+                 FROM colors co
                 JOIN product_colors pc ON pc.color_id = co.id JOIN products p ON p.id = pc.product_id
                 WHERE p.status = 'ACTIVE' ORDER BY co.sort_order""")
+                .param("lang", lang)
                 .query((rs, i) -> new ColorView(rs.getString("code"), rs.getString("name"), rs.getString("hex")))
                 .list();
         Map<String, Object> range = jdbc.sql("SELECT min(base_price_minor) AS lo, max(base_price_minor) AS hi"
@@ -175,24 +189,26 @@ public class CatalogQueryService {
     }
 
     /** Type-ahead suggestions for products and categories; tolerant to typos via trigram similarity. */
-    public List<Suggestion> suggest(String q, int limit) {
+    public List<Suggestion> suggest(String q, int limit, String lang) {
         String tsQuery = SearchQueries.prefixTsQuery(q);
         if (tsQuery == null) {
             return List.of();
         }
-        List<Suggestion> results = new ArrayList<>(jdbc.sql("""
-                SELECT p.slug, p.name, cat.name AS category FROM products p JOIN categories cat ON cat.id = p.category_id
-                WHERE p.status = 'ACTIVE'
-                  AND (p.search_vector @@ to_tsquery('simple', :tsq) OR similarity(p.name, :q) > 0.2)
-                ORDER BY similarity(p.name, :q) DESC, p.rating_count DESC LIMIT :limit""")
-                .param("tsq", tsQuery).param("q", q.trim()).param("limit", limit)
+        String name = tr("p", "name");
+        List<Suggestion> results = new ArrayList<>(jdbc.sql("SELECT p.slug, " + name + " AS name, " + tr("cat", "name")
+                + " AS category FROM products p JOIN categories cat ON cat.id = p.category_id"
+                + " WHERE p.status = 'ACTIVE' AND (p.search_vector @@ to_tsquery('simple', :tsq)"
+                + " OR similarity(" + name + ", :q) > 0.2)"
+                + " ORDER BY similarity(" + name + ", :q) DESC, p.rating_count DESC LIMIT :limit")
+                .param("tsq", tsQuery).param("q", q.trim()).param("limit", limit).param("lang", lang)
                 .query((rs, i) -> new Suggestion("PRODUCT", rs.getString("slug"), rs.getString("name"),
                         rs.getString("category")))
                 .list());
-        results.addAll(jdbc.sql("""
-                SELECT slug, name FROM categories WHERE active AND (name ILIKE :like OR similarity(name, :q) > 0.3)
-                ORDER BY similarity(name, :q) DESC LIMIT 3""")
-                .param("like", SearchQueries.likePattern(q)).param("q", q.trim())
+        String catName = tr("c", "name");
+        results.addAll(jdbc.sql("SELECT c.slug, " + catName + " AS name FROM categories c WHERE c.active AND ("
+                + catName + " ILIKE :like OR similarity(" + catName + ", :q) > 0.3)"
+                + " ORDER BY similarity(" + catName + ", :q) DESC LIMIT 3")
+                .param("like", SearchQueries.likePattern(q)).param("q", q.trim()).param("lang", lang)
                 .query((rs, i) -> new Suggestion("CATEGORY", rs.getString("slug"), rs.getString("name"), null))
                 .list());
         return results;
@@ -200,8 +216,9 @@ public class CatalogQueryService {
 
     // -----------------------------------------------------------------------------------------------------------
 
-    private static final String SUMMARY_SELECT = """
-            SELECT p.id, p.slug, p.name, p.short_description, cat.slug AS category_slug, cat.name AS category_name,
+    private static final String SUMMARY_SELECT = "SELECT p.id, p.slug, " + tr("p", "name") + " AS name, "
+            + tr("p", "short_description") + " AS short_description, cat.slug AS category_slug, "
+            + tr("cat", "name") + " AS category_name, " + """
                    p.product_family, p.garment_type, p.age_group, p.gender, p.fit, p.base_price_minor,
                    p.compare_at_minor, p.currency, p.featured, p.customizable, p.rating_avg, p.rating_count, p.tags,
                    p.created_at,
@@ -225,16 +242,15 @@ public class CatalogQueryService {
                 textArray(rs.getArray("tags")), List.of());
     }
 
-    private List<ProductSummary> withColors(List<ProductSummary> items) {
+    private List<ProductSummary> withColors(List<ProductSummary> items, String lang) {
         if (items.isEmpty()) {
             return items;
         }
         Collection<UUID> ids = items.stream().map(ProductSummary::id).toList();
         Map<UUID, List<ColorView>> byProduct = new LinkedHashMap<>();
-        jdbc.sql("""
-                SELECT pc.product_id, co.code, co.name, co.hex FROM product_colors pc JOIN colors co ON co.id = pc.color_id
-                WHERE pc.product_id IN (:ids) ORDER BY co.sort_order""")
-                .param("ids", ids)
+        jdbc.sql("SELECT pc.product_id, co.code, " + tr("co", "name") + " AS name, co.hex FROM product_colors pc"
+                        + " JOIN colors co ON co.id = pc.color_id WHERE pc.product_id IN (:ids) ORDER BY co.sort_order")
+                .param("ids", ids).param("lang", lang)
                 .query(rs -> {
                     byProduct.computeIfAbsent(rs.getObject("product_id", UUID.class), k -> new ArrayList<>())
                             .add(new ColorView(rs.getString("code"), rs.getString("name"), rs.getString("hex")));

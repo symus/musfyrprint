@@ -12,10 +12,10 @@ const API_BASE = process.env.API_INTERNAL_URL ?? "http://localhost:8080";
  * storefront always shows live catalogue data and builds do not depend on a running backend.
  * The backend caches hot catalogue reads itself.
  */
-export async function apiGet<T>(path: string, init?: { notFoundOn404?: boolean }): Promise<T> {
+export async function apiGet<T>(path: string, init?: { notFoundOn404?: boolean; lang?: string }): Promise<T> {
   await connection();
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { Accept: "application/json" },
+    headers: { Accept: "application/json", ...(init?.lang ? { "Accept-Language": init.lang } : {}) },
     cache: "no-store",
   });
   if (res.status === 404 && init?.notFoundOn404 !== false) {

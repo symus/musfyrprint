@@ -1,11 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render as rtlRender, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductConfigurator } from "@/components/product/ProductConfigurator";
 import { NewsletterForm } from "@/components/forms/NewsletterForm";
 import type { ProductDetail, ProductSummary } from "@/lib/api/types";
+import { I18nProvider } from "@/i18n/client";
+import en from "@/i18n/messages/en";
+import pl from "@/i18n/messages/pl";
+
+const render = (ui: React.ReactElement, locale: "en" | "pl" = "en") =>
+  rtlRender(<I18nProvider locale={locale} messages={locale === "en" ? en : pl}>{ui}</I18nProvider>);
 
 const summary: ProductSummary = {
   id: "1", slug: "classic-unisex-tee", name: "Classic Unisex Tee", shortDescription: null,
@@ -34,10 +40,17 @@ const detail: ProductDetail = {
 describe("ProductCard", () => {
   it("shows name, link, badges and price", () => {
     render(<ProductCard product={summary} />);
-    expect(screen.getByRole("link", { name: "Classic Unisex Tee" })).toHaveAttribute("href", "/products/classic-unisex-tee");
+    expect(screen.getByRole("link", { name: "Classic Unisex Tee" })).toHaveAttribute("href", "/en/products/classic-unisex-tee");
     expect(screen.getByText("New")).toBeInTheDocument();
     expect(screen.getByText("Out of stock")).toBeInTheDocument();
-    expect(screen.getByText(/59,00/)).toBeInTheDocument();
+    expect(screen.getByText("PLN 59.00")).toBeInTheDocument();
+  });
+
+  it("renders Polish labels, prices and locale-prefixed links", () => {
+    render(<ProductCard product={summary} />, "pl");
+    expect(screen.getByRole("link", { name: "Classic Unisex Tee" })).toHaveAttribute("href", "/pl/products/classic-unisex-tee");
+    expect(screen.getByText("Nowość")).toBeInTheDocument();
+    expect(screen.getByText(/59,00\s?zł/)).toBeInTheDocument();
   });
 });
 
@@ -52,7 +65,7 @@ describe("ProductConfigurator", () => {
     await user.click(screen.getByRole("button", { name: "Sky Blue" }));
     expect(screen.getByRole("button", { name: "3–6 months" })).toBeEnabled();
     await user.click(screen.getByRole("button", { name: "3–6 months" }));
-    expect(screen.getByText(/54,00/)).toBeInTheDocument();
+    expect(screen.getByText("PLN 54.00")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Personalise/ })).toHaveAttribute("href", expect.stringContaining("color=sky"));
   });
 

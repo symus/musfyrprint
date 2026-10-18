@@ -14,6 +14,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /** A configurable choice such as material, finish or sticker shape, with priced values. */
 @Entity
@@ -39,6 +41,10 @@ public class ProductOptionGroup {
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "i18n", nullable = false)
+    private String i18n = "{}";
+
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
     private List<ProductOptionValue> values = new ArrayList<>();
@@ -52,4 +58,7 @@ public class ProductOptionGroup {
     public boolean isRequired() { return required; }
     public int getSortOrder() { return sortOrder; }
     public List<ProductOptionValue> getValues() { return values; }
+
+    /** Translations as JSON: {"pl": {"name": "..."}}. */
+    public String getI18n() { return i18n; }
 }

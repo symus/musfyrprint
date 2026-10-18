@@ -7,7 +7,7 @@ import { Plus } from "lucide-react";
 
 import { apiFetch } from "@/lib/api/client";
 import type { Page } from "@/lib/api/types";
-import type { AdminProductRow } from "@/lib/admin-types";
+import { ADMIN_INTL, type AdminProductRow } from "@/lib/admin-types";
 import { formatMoney } from "@/lib/format/money";
 
 const STATUS_STYLE = { ACTIVE: "bg-mint-soft text-success", DRAFT: "bg-sun-soft text-ink", ARCHIVED: "bg-cloud text-ink-soft" };
@@ -82,7 +82,7 @@ function ProductsTable() {
                 </td>
                 <td className="p-3">{p.categoryName}</td>
                 <td className="p-3"><span className={`chip ${STATUS_STYLE[p.status]}`}>{p.status}</span></td>
-                <td className="p-3">{formatMoney(p.basePrice)}</td>
+                <td className="p-3">{formatMoney(p.basePrice, ADMIN_INTL)}</td>
                 <td className="p-3">{p.variantCount}</td>
                 <td className="p-3">{p.totalStock}</td>
                 <td className="p-3 text-xs text-ink-soft">{new Date(p.updatedAt).toLocaleString()}</td>

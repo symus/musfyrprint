@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "product_option_values")
@@ -33,6 +35,10 @@ public class ProductOptionValue {
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "i18n", nullable = false)
+    private String i18n = "{}";
+
     protected ProductOptionValue() {
     }
 
@@ -41,4 +47,7 @@ public class ProductOptionValue {
     public String getLabel() { return label; }
     public long getPriceDeltaMinor() { return priceDeltaMinor; }
     public int getSortOrder() { return sortOrder; }
+
+    /** Translations as JSON: {"pl": {"name": "..."}}. */
+    public String getI18n() { return i18n; }
 }

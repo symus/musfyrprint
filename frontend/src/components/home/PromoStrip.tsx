@@ -1,6 +1,6 @@
 import type { PromotionView } from "@/lib/api/types";
 
-export function PromoStrip({ promotions }: { promotions: PromotionView[] }) {
+export function PromoStrip({ promotions, useCode }: { promotions: PromotionView[]; useCode: string }) {
   if (promotions.length === 0) return null;
   return (
     <div className="bg-ink text-paper">
@@ -10,7 +10,7 @@ export function PromoStrip({ promotions }: { promotions: PromotionView[] }) {
             <span className="font-semibold">{p.title}</span>
             {p.code && (
               <>
-                {" – use code "}
+                {` – ${useCode} `}
                 <code className="rounded bg-sun px-1.5 py-0.5 font-bold text-ink">{p.code}</code>
               </>
             )}

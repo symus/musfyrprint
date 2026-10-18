@@ -1,21 +1,23 @@
-import Link from "next/link";
 import { Building2 } from "lucide-react";
 
 import { GarmentArt } from "@/components/product/GarmentArt";
+import { Link } from "@/i18n/client";
+import { getI18n } from "@/i18n/server";
 
-export function BusinessBanner() {
+export async function BusinessBanner() {
+  const { t } = await getI18n();
+  const b = t.business;
   return (
     <section className="container-page py-8" aria-labelledby="business-heading">
       <div className="relative grid items-center gap-8 overflow-hidden rounded-[2rem] bg-violet-strong p-8 text-white md:grid-cols-[1.4fr_1fr] md:p-12">
         <div>
-          <p className="chip mb-4 bg-white/10 text-white"><Building2 size={14} aria-hidden="true" /> Business & bulk</p>
-          <h2 id="business-heading" className="text-3xl font-extrabold sm:text-4xl">Merch for teams, schools, events and brands</h2>
+          <p className="chip mb-4 bg-white/10 text-white"><Building2 size={14} aria-hidden="true" /> {b.chip}</p>
+          <h2 id="business-heading" className="text-3xl font-extrabold sm:text-4xl">{b.title}</h2>
           <p className="mt-3 max-w-xl text-white">
-            Branded tees, hoodies, totes and packaging labels from 10 pieces. Tell us what you need and our team
-            will prepare a tailored quotation.
+            {b.text}
           </p>
           <Link href="/custom-orders" className="btn mt-6 bg-sun text-ink hover:bg-white">
-            Request a quote
+            {b.cta}
           </Link>
         </div>
         <div className="relative hidden h-56 md:block" aria-hidden="true">

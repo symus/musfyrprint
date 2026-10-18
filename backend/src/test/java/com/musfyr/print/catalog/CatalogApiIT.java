@@ -106,4 +106,28 @@ class CatalogApiIT {
         mvc.perform(get("/api/v1/catalog/categories").cookie(new Cookie("mp_at", "garbage.token.value")))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void returnsPolishContentForPolishAcceptLanguage() throws Exception {
+        mvc.perform(get("/api/v1/catalog/products/pullover-hoodie").header("Accept-Language", "pl-PL,pl;q=0.9"))
+                .andExpect(status().isOk())
+                .andExpect(header().stringValues("Vary", hasItem(org.hamcrest.Matchers.containsString("Accept-Language"))))
+                .andExpect(jsonPath("$.name", is("Bluza z kapturem")))
+                .andExpect(jsonPath("$.breadcrumbs[0].name", is("Bluzy")))
+                .andExpect(jsonPath("$.colors[0].name", is("Czarny")))
+                .andExpect(jsonPath("$.printAreas[0].name", is("Przód")));
+        // English (base content) when no or an unsupported language is requested
+        mvc.perform(get("/api/v1/catalog/products/pullover-hoodie").header("Accept-Language", "fr"))
+                .andExpect(jsonPath("$.name", is("Pullover Hoodie")));
+    }
+
+    @Test
+    void searchFindsProductsByPolishName() throws Exception {
+        mvc.perform(get("/api/v1/catalog/products").param("q", "koszulka").header("Accept-Language", "pl"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[*].slug", hasItem("classic-unisex-tee")))
+                .andExpect(jsonPath("$.items[0].categoryName", is("Koszulki")));
+        mvc.perform(get("/api/v1/catalog/suggest").param("q", "naklejka").header("Accept-Language", "pl"))
+                .andExpect(jsonPath("$[*].slug", hasItem("transparent-sticker")));
+    }
 }

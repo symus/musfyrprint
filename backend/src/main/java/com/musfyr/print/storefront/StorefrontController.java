@@ -14,6 +14,7 @@ import com.musfyr.print.catalog.dto.CatalogDtos.ProductSummary;
 import com.musfyr.print.catalog.service.CatalogQueryService;
 import com.musfyr.print.catalog.service.ProductSearchCriteria;
 import com.musfyr.print.catalog.service.ProductSearchCriteria.Sort;
+import com.musfyr.print.common.i18n.ContentLanguage;
 import com.musfyr.print.marketing.PromotionQueries;
 import com.musfyr.print.reviews.ReviewQueries;
 
@@ -25,27 +26,31 @@ public class StorefrontController {
     private final CatalogQueryService catalog;
     private final PromotionQueries promotions;
     private final ReviewQueries reviews;
+    private final ContentLanguage language;
 
-    public StorefrontController(CatalogQueryService catalog, PromotionQueries promotions, ReviewQueries reviews) {
+    public StorefrontController(CatalogQueryService catalog, PromotionQueries promotions, ReviewQueries reviews,
+                                ContentLanguage language) {
         this.catalog = catalog;
         this.promotions = promotions;
         this.reviews = reviews;
+        this.language = language;
     }
 
     @GetMapping("/home")
     @Operation(summary = "Everything the homepage needs in one round trip")
     public HomePage home() {
+        String lang = language.current();
         return new HomePage(
-                catalog.search(ProductSearchCriteria.simple(Sort.FEATURED, 8)).items(),
-                catalog.search(ProductSearchCriteria.simple(Sort.NEWEST, 8)).items(),
-                catalog.search(ProductSearchCriteria.simple(Sort.POPULAR, 8)).items(),
-                catalog.search(ProductSearchCriteria.simple(Sort.POPULAR, 4).withTag("baby")).items(),
+                catalog.search(ProductSearchCriteria.simple(Sort.FEATURED, 8), lang).items(),
+                catalog.search(ProductSearchCriteria.simple(Sort.NEWEST, 8), lang).items(),
+                catalog.search(ProductSearchCriteria.simple(Sort.POPULAR, 8), lang).items(),
+                catalog.search(ProductSearchCriteria.simple(Sort.POPULAR, 4).withTag("baby"), lang).items(),
                 catalog.search(ProductSearchCriteria.simple(Sort.POPULAR, 4)
-                        .withCollection("family-matching")).items(),
-                catalog.search(ProductSearchCriteria.simple(Sort.POPULAR, 4).withTag("business")).items(),
-                catalog.categories(),
-                catalog.collections(),
-                promotions.activeBanners(),
+                        .withCollection("family-matching"), lang).items(),
+                catalog.search(ProductSearchCriteria.simple(Sort.POPULAR, 4).withTag("business"), lang).items(),
+                catalog.categories(lang),
+                catalog.collections(lang),
+                promotions.activeBanners(lang),
                 reviews.featured(6));
     }
 

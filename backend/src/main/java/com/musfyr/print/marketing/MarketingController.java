@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.musfyr.print.common.i18n.ContentLanguage;
 import com.musfyr.print.common.ratelimit.RateLimiter;
 import com.musfyr.print.common.web.RequestContext;
 
@@ -33,17 +34,20 @@ public class MarketingController {
     private final NewsletterRepository newsletter;
     private final PromotionQueries promotions;
     private final RateLimiter rateLimiter;
+    private final ContentLanguage language;
 
-    public MarketingController(NewsletterRepository newsletter, PromotionQueries promotions, RateLimiter rateLimiter) {
+    public MarketingController(NewsletterRepository newsletter, PromotionQueries promotions, RateLimiter rateLimiter,
+                               ContentLanguage language) {
         this.newsletter = newsletter;
         this.promotions = promotions;
         this.rateLimiter = rateLimiter;
+        this.language = language;
     }
 
     @GetMapping("/promotions/active")
     @Operation(summary = "Promotions currently advertised on the storefront")
     public List<PromotionQueries.PromotionView> activePromotions() {
-        return promotions.activeBanners();
+        return promotions.activeBanners(language.current());
     }
 
     @PostMapping("/newsletter/subscriptions")

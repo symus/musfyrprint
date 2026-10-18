@@ -105,6 +105,9 @@ spring:
       on-profile: dev
   flyway:
     locations: classpath:db/migration,classpath:db/seed
+    # Seed scripts are versioned V1000+, so later schema migrations (V2, V3, ...) arrive "out of order" on
+    # databases that already hold seed data. Production loads no seeds and keeps strict ordering.
+    out-of-order: true
 app:
   security:
     # Development-only fallback. Production refuses to start without JWT_SECRET (see SecurityProperties).

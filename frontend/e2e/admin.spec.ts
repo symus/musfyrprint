@@ -44,8 +44,8 @@ test.describe("back office", () => {
     await page.getByRole("button", { name: "Publish" }).click();
     await expect(page.getByText("Status changed to ACTIVE.")).toBeVisible();
 
-    await page.goto(`/products/${slug}`);
+    await page.goto(`/en/products/${slug}`);
     await expect(page.getByRole("heading", { level: 1, name: "E2E Tee" })).toBeVisible();
-    await expect(page.getByText("61,50 zł").first()).toBeVisible();
+    await expect(page.getByText("PLN 61.50").first()).toBeVisible();
   });
 });

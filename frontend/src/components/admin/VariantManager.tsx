@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { postJson, putJson } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/errors";
-import type { AdminProductDetail, AdminVariant } from "@/lib/admin-types";
+import { ADMIN_INTL, type AdminProductDetail, type AdminVariant } from "@/lib/admin-types";
 import { formatMinor } from "@/lib/format/money";
 
 export function VariantManager({ product, onChange }: { product: AdminProductDetail; onChange: (p: AdminProductDetail) => void }) {
@@ -79,7 +79,7 @@ function VariantRow({ variant, productId, currency, onSaved }: {
       <td className="p-2">{variant.sizeCode}</td>
       <td className="p-2">
         <label className="sr-only" htmlFor={`p-${variant.id}`}>Price override for {variant.sku}</label>
-        <input id={`p-${variant.id}`} className="input !w-28 !py-1" inputMode="decimal" placeholder={formatMinor(variant.effectivePriceMinor, currency)} value={price} onChange={(e) => setPrice(e.target.value)} />
+        <input id={`p-${variant.id}`} className="input !w-28 !py-1" inputMode="decimal" placeholder={formatMinor(variant.effectivePriceMinor, currency, ADMIN_INTL)} value={price} onChange={(e) => setPrice(e.target.value)} />
       </td>
       <td className="p-2">
         <label className="sr-only" htmlFor={`s-${variant.id}`}>Stock for {variant.sku}</label>

@@ -22,6 +22,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.Version;
 
 import com.musfyr.print.common.domain.TimestampedEntity;
@@ -109,6 +111,10 @@ public class Product extends TimestampedEntity {
 
     @Version
     private long version;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "i18n", nullable = false)
+    private String i18n = "{}";
 
     @ManyToMany
     @JoinTable(name = "product_colors",
@@ -219,4 +225,7 @@ public class Product extends TimestampedEntity {
     public List<ProductOptionGroup> getOptionGroups() { return optionGroups; }
     public List<PrintArea> getPrintAreas() { return printAreas; }
     public Set<ProductPrintMethod> getPrintMethods() { return printMethods; }
+
+    /** Translations as JSON: {"pl": {"name": "..."}}. */
+    public String getI18n() { return i18n; }
 }

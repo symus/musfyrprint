@@ -64,4 +64,15 @@ class LeadCaptureIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[*].field", hasItem("quantity")));
     }
+
+    @Test
+    void validationMessagesFollowAcceptLanguage() throws Exception {
+        mvc.perform(postJson("/api/v1/quotes",
+                        "{\"contactName\":\"A\",\"email\":\"a@example.com\",\"productInterest\":\"Tee\",\"quantity\":2}")
+                        .header("Accept-Language", "pl"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].message", org.hamcrest.Matchers.containsString("10")))
+                .andExpect(jsonPath("$.errors[0].message", org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString("must be"))));
+    }
 }

@@ -26,6 +26,7 @@ import com.musfyr.print.catalog.dto.CatalogDtos.Suggestion;
 import com.musfyr.print.catalog.service.CatalogQueryService;
 import com.musfyr.print.catalog.service.ProductDetailService;
 import com.musfyr.print.catalog.service.ProductSearchCriteria;
+import com.musfyr.print.common.i18n.ContentLanguage;
 import com.musfyr.print.common.web.PageResponse;
 
 @RestController
@@ -39,10 +40,12 @@ public class CatalogController {
 
     private final CatalogQueryService queries;
     private final ProductDetailService details;
+    private final ContentLanguage language;
 
-    public CatalogController(CatalogQueryService queries, ProductDetailService details) {
+    public CatalogController(CatalogQueryService queries, ProductDetailService details, ContentLanguage language) {
         this.queries = queries;
         this.details = details;
+        this.language = language;
     }
 
     @GetMapping("/products")
@@ -65,57 +68,59 @@ public class CatalogController {
             @RequestParam(defaultValue = "0") @Min(0) @Max(500) int page,
             @RequestParam(defaultValue = "24") @Min(1) @Max(60) int size) {
         return queries.search(new ProductSearchCriteria(q, category, collection, family, ageGroup, gender, fit,
-                colors == null ? List.of() : colors, minPrice, maxPrice, tag, customizable, sort, page, size, null));
+                colors == null ? List.of() : colors, minPrice, maxPrice, tag, customizable, sort, page, size, null),
+                language.current());
     }
 
     @GetMapping("/products/{slug}")
     @Operation(summary = "Product detail with variants, options, print areas and methods")
     public ResponseEntity<ProductDetail> product(@PathVariable @Pattern(regexp = SLUG) String slug) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noCache()).body(details.bySlug(slug));
+        return ResponseEntity.ok().cacheControl(CacheControl.noCache()).body(details.bySlug(slug, language.current()));
     }
 
     @GetMapping("/products/{slug}/related")
     @Operation(summary = "Popular products from the same category")
     public List<ProductSummary> related(@PathVariable @Pattern(regexp = SLUG) String slug,
                                         @RequestParam(defaultValue = "4") @Min(1) @Max(12) int size) {
-        ProductDetail product = details.bySlug(slug);
+        String lang = language.current();
+        ProductDetail product = details.bySlug(slug, lang);
         String categorySlug = product.breadcrumbs().getLast().slug();
         return queries.search(ProductSearchCriteria.simple(ProductSearchCriteria.Sort.POPULAR, size)
-                .relatedTo(categorySlug, slug)).items();
+                .relatedTo(categorySlug, slug), lang).items();
     }
 
     @GetMapping("/categories")
     @Operation(summary = "Active categories with product counts")
     public List<CategoryView> categories() {
-        return queries.categories();
+        return queries.categories(language.current());
     }
 
     @GetMapping("/categories/{slug}")
     public CategoryView category(@PathVariable @Pattern(regexp = SLUG) String slug) {
-        return queries.category(slug);
+        return queries.category(slug, language.current());
     }
 
     @GetMapping("/collections")
     @Operation(summary = "Curated collections (gifts, family matching, business, ...)")
     public List<CollectionView> collections() {
-        return queries.collections();
+        return queries.collections(language.current());
     }
 
     @GetMapping("/collections/{slug}")
     public CollectionView collection(@PathVariable @Pattern(regexp = SLUG) String slug) {
-        return queries.collection(slug);
+        return queries.collection(slug, language.current());
     }
 
     @GetMapping("/facets")
     @Operation(summary = "Filter options derived from the active catalogue")
     public Facets facets() {
-        return queries.facets();
+        return queries.facets(language.current());
     }
 
     @GetMapping("/suggest")
     @Operation(summary = "Search autocomplete")
     public List<Suggestion> suggest(@RequestParam @Size(min = 2, max = 60) String q,
                                     @RequestParam(defaultValue = "6") @Min(1) @Max(10) int limit) {
-        return queries.suggest(q, limit);
+        return queries.suggest(q, limit, language.current());
     }
 }

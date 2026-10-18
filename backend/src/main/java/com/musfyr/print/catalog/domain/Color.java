@@ -6,6 +6,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "colors")
@@ -26,6 +28,10 @@ public class Color {
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "i18n", nullable = false)
+    private String i18n = "{}";
+
     protected Color() {
     }
 
@@ -42,4 +48,7 @@ public class Color {
     public String getName() { return name; }
     public String getHex() { return hex; }
     public int getSortOrder() { return sortOrder; }
+
+    /** Translations as JSON: {"pl": {"name": "..."}}. */
+    public String getI18n() { return i18n; }
 }

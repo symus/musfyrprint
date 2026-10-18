@@ -26,6 +26,8 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   const method = (init.method ?? "GET").toUpperCase();
   const headers = new Headers(init.headers);
   headers.set("Accept", "application/json");
+  // Server-side validation messages follow the page language.
+  if (!headers.has("Accept-Language")) headers.set("Accept-Language", document.documentElement.lang || "en");
   if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
     await ensureCsrfCookie();

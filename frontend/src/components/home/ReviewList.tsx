@@ -1,11 +1,14 @@
-import Link from "next/link";
+"use client";
+
 import { BadgeCheck } from "lucide-react";
 
 import type { ReviewView } from "@/lib/api/types";
 import { Stars } from "@/components/ui/Stars";
+import { Link, useI18n } from "@/i18n/client";
 
 /** Renders only moderated, approved reviews from the database. Hidden when there are none. */
 export function ReviewList({ reviews }: { reviews: ReviewView[] }) {
+  const { t } = useI18n();
   if (reviews.length === 0) return null;
   return (
     <ul className="grid gap-4 md:grid-cols-3">
@@ -18,7 +21,7 @@ export function ReviewList({ reviews }: { reviews: ReviewView[] }) {
             <span className="font-semibold">{r.authorName}</span>
             {r.verifiedPurchase && (
               <span className="inline-flex items-center gap-1 text-success">
-                <BadgeCheck size={16} aria-hidden="true" /> Verified purchase
+                <BadgeCheck size={16} aria-hidden="true" /> {t.product.verified}
               </span>
             )}
           </p>

@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /** A physical print zone (front, back, sleeve, sticker face) with dimensions in millimetres. */
 @Entity
@@ -46,6 +48,10 @@ public class PrintArea {
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "i18n", nullable = false)
+    private String i18n = "{}";
+
     protected PrintArea() {
     }
 
@@ -58,4 +64,7 @@ public class PrintArea {
     public int getMinDpi() { return minDpi; }
     public long getPriceDeltaMinor() { return priceDeltaMinor; }
     public int getSortOrder() { return sortOrder; }
+
+    /** Translations as JSON: {"pl": {"name": "..."}}. */
+    public String getI18n() { return i18n; }
 }

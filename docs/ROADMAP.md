@@ -17,7 +17,19 @@ Legend: ✅ done · 🟡 partial / prepared · ⬜ not started. Nothing marked �
 | Tests: 16 unit + 21 integration (backend), 17 component/unit + 12 E2E incl. axe (frontend) | ✅ |
 | Docker images, compose, health checks, structured logs | ✅ |
 
+## Phase 1.5 — Polish + English ✅
+
+* `/pl` and `/en` routes, language switcher, Accept-Language detection, hreflang alternates and bilingual sitemap.
+* Translated catalogue content (JSONB `i18n` columns), multilingual full-text search, localised validation errors.
+* Polish help/legal templates (still flagged for legal review).
+
 ## Phase 2 — Design experience ⬜ (next)
+
+Decisions for Phase 2 (no licensed 3D models or print supplier yet):
+* 3D: procedurally generated placeholder garment meshes with proper UV print zones, swappable for licensed
+  `.glb` files later via `model_key`. Clearly labelled as an approximate preview.
+* Sizing & print specs: generic reference size charts and print-file specs, marked "reference – confirm with
+  supplier" in the admin until a supplier is chosen.
 
 * **2D editor** (Fabric.js): text, fonts, uploads, shapes, layers, undo/redo, snapping, print-area & safe-zone
   overlays, low-DPI warnings, per-zone designs (front/back/chest/sleeve), duplicate design.
@@ -61,7 +73,7 @@ admin reports and integration/webhook monitoring.
 
 ## Phase 5 — Production readiness ⬜
 
-Redis for rate limits/caches, refresh-token revocation store, CDN for assets, i18n (pl/en first) and multi-currency
+Redis for rate limits/caches, refresh-token revocation store, CDN for assets, multi-currency
 display, consent banner + analytics, load tests, security review/pen-test, backup drills, SLOs and alerting.
 
 ## Open TODOs in code

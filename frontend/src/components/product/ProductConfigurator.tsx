@@ -1,20 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { Clock, Info, Palette, Printer } from "lucide-react";
 
 import type { ProductDetail } from "@/lib/api/types";
+import { Link, useI18n } from "@/i18n/client";
+import { fmt } from "@/i18n/format";
 import { GarmentArt } from "./GarmentArt";
 import { Price } from "@/components/ui/Price";
 import { formatMinor } from "@/lib/format/money";
 import { sizeLabel } from "@/lib/format/labels";
 
-const AVAILABILITY_TEXT = {
-  IN_STOCK: { text: "In stock", cls: "text-success" },
-  LOW_STOCK: { text: "Only a few left", cls: "text-coral-strong" },
-  OUT_OF_STOCK: { text: "Out of stock", cls: "text-danger" },
-  UNAVAILABLE: { text: "Unavailable", cls: "text-danger" },
+const AVAILABILITY_CLASS = {
+  IN_STOCK: "text-success",
+  LOW_STOCK: "text-coral-strong",
+  OUT_OF_STOCK: "text-danger",
+  UNAVAILABLE: "text-danger",
 } as const;
 
 /**
@@ -23,6 +24,7 @@ const AVAILABILITY_TEXT = {
  * at checkout.
  */
 export function ProductConfigurator({ product }: { product: ProductDetail }) {
+  const { t, intl } = useI18n();
   const [colorCode, setColorCode] = useState(product.colors[0]?.code ?? null);
   const [sizeCode, setSizeCode] = useState<string | null>(null);
   const [options, setOptions] = useState<Record<string, string>>(() =>
@@ -55,7 +57,7 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
         <GarmentArt
           garmentType={product.garmentType}
           colorHex={color?.hex ?? "#FFFFFF"}
-          title={`${product.name}${color ? ` in ${color.name}` : ""}`}
+          title={`${product.name}${color ? ` ${t.product.in} ${color.name}` : ""}`}
           className="h-full w-full"
         />
       </div>
@@ -65,13 +67,13 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
         {product.shortDescription && <p className="mt-3 text-lg text-ink-soft">{product.shortDescription}</p>}
         <div className="mt-5 text-2xl" aria-live="polite">
           <Price value={{ amountMinor: unit, currency: product.priceFrom.currency }} compareAt={product.compareAt} from={!variant} />
-          <p className="mt-1 text-xs text-ink-soft">Incl. VAT where applicable · design and print-location fees are added in the studio</p>
+          <p className="mt-1 text-xs text-ink-soft">{t.product.vatNote}</p>
         </div>
 
         {product.colors.length > 0 && (
           <fieldset className="mt-8">
             <legend className="mb-3 text-sm font-bold">
-              Colour: <span className="font-normal">{color?.name}</span>
+              {t.product.colour}: <span className="font-normal">{color?.name}</span>
             </legend>
             <div className="flex flex-wrap gap-3">
               {product.colors.map((c) => (
@@ -91,7 +93,7 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
         )}
 
         <fieldset className="mt-8">
-          <legend className="mb-3 text-sm font-bold">Size</legend>
+          <legend className="mb-3 text-sm font-bold">{t.product.size}</legend>
           <div className="flex flex-wrap gap-2">
             {sizes.map((s) => {
               const v = variantsForColor.find((x) => x.sizeCode === s);
@@ -107,21 +109,20 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
                     s === sizeCode ? "border-ink bg-ink text-paper" : "border-line bg-white hover:border-ink"
                   } disabled:cursor-not-allowed disabled:border-dashed disabled:text-ink-soft disabled:line-through`}
                 >
-                  {sizeLabel(s)}
+                  {sizeLabel(t, s)}
                 </button>
               );
             })}
           </div>
           {variant && (
-            <p className={`mt-3 text-sm font-semibold ${AVAILABILITY_TEXT[variant.availability].cls}`}>
-              {AVAILABILITY_TEXT[variant.availability].text} · SKU {variant.sku}
+            <p className={`mt-3 text-sm font-semibold ${AVAILABILITY_CLASS[variant.availability]}`}>
+              {t.product.availability[variant.availability]} · {t.product.sku} {variant.sku}
             </p>
           )}
           {isAgeSized && (
             <p className="mt-3 flex gap-2 rounded-xl bg-sky/20 p-3 text-sm">
               <Info size={18} className="shrink-0 text-violet" aria-hidden="true" />
-              Age-based sizes are approximate. Children grow differently, so compare your child&apos;s height and chest
-              measurements with the garment measurements before choosing.
+              {t.product.ageNotice}
             </p>
           )}
         </fieldset>
@@ -141,7 +142,7 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
                   }`}
                 >
                   {v.label}
-                  {v.priceDeltaMinor > 0 && <span className="ml-1 font-normal opacity-75">+{formatMinor(v.priceDeltaMinor, product.priceFrom.currency)}</span>}
+                  {v.priceDeltaMinor > 0 && <span className="ml-1 font-normal opacity-75">+{formatMinor(v.priceDeltaMinor, product.priceFrom.currency, intl)}</span>}
                 </button>
               ))}
             </div>
@@ -151,19 +152,19 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
         <div className="mt-8 flex flex-wrap gap-3">
           {product.customizable && (
             <Link href={designHref} className="btn btn-primary text-lg">
-              <Palette size={20} aria-hidden="true" /> Personalise this product
+              <Palette size={20} aria-hidden="true" /> {t.product.personalise}
             </Link>
           )}
-          <Link href="/custom-orders" className="btn btn-secondary">Ordering 10+? Get a quote</Link>
+          <Link href="/custom-orders" className="btn btn-secondary">{t.product.bulk}</Link>
         </div>
 
         <dl className="mt-10 grid gap-4 border-t border-line pt-6 text-sm sm:grid-cols-2">
           <div className="flex gap-3">
             <Clock className="shrink-0 text-violet" size={20} aria-hidden="true" />
             <div>
-              <dt className="font-bold">Production time</dt>
+              <dt className="font-bold">{t.product.productionTime}</dt>
               <dd className="text-ink-soft">
-                {product.productionTime.minDays}–{product.productionTime.maxDays} business days before dispatch
+                {fmt(t.product.productionDays, { min: product.productionTime.minDays, max: product.productionTime.maxDays })}
               </dd>
             </div>
           </div>
@@ -171,7 +172,7 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
             <div className="flex gap-3">
               <Printer className="shrink-0 text-violet" size={20} aria-hidden="true" />
               <div>
-                <dt className="font-bold">Print methods</dt>
+                <dt className="font-bold">{t.product.printMethods}</dt>
                 <dd className="text-ink-soft">{product.printMethods.map((m) => m.name).join(", ")}</dd>
               </div>
             </div>

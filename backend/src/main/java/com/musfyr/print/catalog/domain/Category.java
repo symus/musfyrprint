@@ -11,6 +11,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import com.musfyr.print.common.domain.TimestampedEntity;
 
@@ -46,6 +48,10 @@ public class Category extends TimestampedEntity {
     @Column(nullable = false)
     private boolean active = true;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "i18n", nullable = false)
+    private String i18n = "{}";
+
     protected Category() {
     }
 
@@ -73,4 +79,7 @@ public class Category extends TimestampedEntity {
     public void setSortOrder(int sortOrder) { this.sortOrder = sortOrder; }
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
+
+    /** Translations as JSON: {"pl": {"name": "..."}}. */
+    public String getI18n() { return i18n; }
 }

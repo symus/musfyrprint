@@ -104,3 +104,6 @@ export const AGE_GROUPS = ["BABY", "TODDLER", "KIDS", "TEEN", "ADULT", "NA"];
 export const GENDERS = ["MEN", "WOMEN", "UNISEX", "NA"];
 export const FITS = ["REGULAR", "SLIM", "FITTED", "OVERSIZED", "RELAXED", "NA"];
 export const FAMILIES = ["APPAREL", "STICKER", "MERCH"];
+
+/** The back office is English-only; amounts are still shown in their own currency. */
+export const ADMIN_INTL = "en-GB";

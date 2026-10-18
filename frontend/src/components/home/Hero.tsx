@@ -1,10 +1,12 @@
-import Link from "next/link";
 import { ArrowRight, Palette, Ruler, Sparkles, Truck } from "lucide-react";
 
 import { GarmentArt } from "@/components/product/GarmentArt";
-import { brand } from "@/config/brand";
+import { Link } from "@/i18n/client";
+import { getI18n } from "@/i18n/server";
 
-export function Hero() {
+export async function Hero() {
+  const { t } = await getI18n();
+  const h = t.hero;
   return (
     <section className="relative overflow-hidden">
       <div aria-hidden="true" className="absolute -right-32 -top-32 size-[28rem] rounded-full bg-sun-soft blur-2xl" />
@@ -12,33 +14,32 @@ export function Hero() {
       <div className="container-page relative grid items-center gap-10 py-14 md:py-20 lg:grid-cols-2">
         <div>
           <p className="chip mb-5 bg-white text-ink ring-1 ring-line">
-            <Sparkles size={14} aria-hidden="true" className="text-coral" /> {brand.tagline}
+            <Sparkles size={14} aria-hidden="true" className="text-coral" /> {t.brand.tagline}
           </p>
           <h1 className="text-5xl font-extrabold leading-[0.95] sm:text-6xl lg:text-7xl">
-            {brand.heroTitle.split(",")[0]},{" "}
+            {h.titleA}{" "}
             <span className="relative inline-block text-coral-strong">
-              {brand.heroTitle.split(",").slice(1).join(",").trim() || "Your Style."}
+              {h.titleB}
               <svg aria-hidden="true" viewBox="0 0 300 20" className="absolute -bottom-2 left-0 w-full" preserveAspectRatio="none">
                 <path d="M4 14 Q80 2 150 10 T296 8" stroke="var(--color-sun)" strokeWidth="7" fill="none" strokeLinecap="round" />
               </svg>
             </span>
           </h1>
           <p className="mt-6 max-w-xl text-lg text-ink-soft">
-            Personalised T-shirts, hoodies, baby clothes and stickers. Start from a template or upload your own
-            artwork – we print every piece to order.
+            {h.text}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/design" className="btn btn-primary text-lg">
-              <Palette size={20} aria-hidden="true" /> Design Your Own
+              <Palette size={20} aria-hidden="true" /> {h.ctaDesign}
             </Link>
             <Link href="/shop" className="btn btn-secondary text-lg">
-              Shop Products <ArrowRight size={20} aria-hidden="true" />
+              {h.ctaShop} <ArrowRight size={20} aria-hidden="true" />
             </Link>
           </div>
           <ul className="mt-10 grid max-w-xl grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-            <li className="flex items-center gap-2"><Ruler size={18} className="text-violet" aria-hidden="true" /> Baby to adult sizing</li>
-            <li className="flex items-center gap-2"><Palette size={18} className="text-violet" aria-hidden="true" /> Templates or your art</li>
-            <li className="flex items-center gap-2"><Truck size={18} className="text-violet" aria-hidden="true" /> Made to order</li>
+            <li className="flex items-center gap-2"><Ruler size={18} className="text-violet" aria-hidden="true" /> {h.trust[0]}</li>
+            <li className="flex items-center gap-2"><Palette size={18} className="text-violet" aria-hidden="true" /> {h.trust[1]}</li>
+            <li className="flex items-center gap-2"><Truck size={18} className="text-violet" aria-hidden="true" /> {h.trust[2]}</li>
           </ul>
         </div>
 

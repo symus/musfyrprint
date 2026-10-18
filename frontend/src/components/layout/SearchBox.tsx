@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
 import type { Suggestion } from "@/lib/api/types";
+import { useI18n } from "@/i18n/client";
 
 /** Accessible combobox with debounced, typo-tolerant suggestions from the catalogue API. */
 export function SearchBox({ className = "", autoFocus = false }: { className?: string; autoFocus?: boolean }) {
   const router = useRouter();
+  const { t, locale, href } = useI18n();
   const listId = useId();
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<Suggestion[]>([]);
@@ -23,7 +25,10 @@ export function SearchBox({ className = "", autoFocus = false }: { className?: s
       abort.current?.abort();
       abort.current = new AbortController();
       try {
-        const res = await fetch(`/api/v1/catalog/suggest?q=${encodeURIComponent(q)}`, { signal: abort.current.signal });
+        const res = await fetch(`/api/v1/catalog/suggest?q=${encodeURIComponent(q)}`, {
+          signal: abort.current.signal,
+          headers: { "Accept-Language": locale },
+        });
         if (res.ok) {
           setItems((await res.json()) as Suggestion[]);
           setOpen(true);
@@ -34,15 +39,15 @@ export function SearchBox({ className = "", autoFocus = false }: { className?: s
       }
     }, 180);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, locale]);
 
   // Suggestions only apply while the query is long enough; older results are hidden, not cleared.
   const visible = query.trim().length >= 2 ? items : [];
 
   const go = (s?: Suggestion) => {
     setOpen(false);
-    if (s) router.push(s.type === "PRODUCT" ? `/products/${s.slug}` : `/category/${s.slug}`);
-    else if (query.trim()) router.push(`/shop?q=${encodeURIComponent(query.trim())}&sort=RELEVANCE`);
+    if (s) router.push(href(s.type === "PRODUCT" ? `/products/${s.slug}` : `/category/${s.slug}`));
+    else if (query.trim()) router.push(href(`/shop?q=${encodeURIComponent(query.trim())}&sort=RELEVANCE`));
   };
 
   return (
@@ -54,7 +59,7 @@ export function SearchBox({ className = "", autoFocus = false }: { className?: s
         go(active >= 0 ? visible[active] : undefined);
       }}
     >
-      <label htmlFor={`${listId}-input`} className="sr-only">Search products</label>
+      <label htmlFor={`${listId}-input`} className="sr-only">{t.search.label}</label>
       <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft" aria-hidden="true" />
       <input
         id={`${listId}-input`}
@@ -66,7 +71,7 @@ export function SearchBox({ className = "", autoFocus = false }: { className?: s
         aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
         autoComplete="off"
         autoFocus={autoFocus}
-        placeholder="Search tees, hoodies, stickers…"
+        placeholder={t.search.placeholder}
         className="input rounded-full pl-10"
         value={query}
         maxLength={60}
@@ -100,7 +105,7 @@ export function SearchBox({ className = "", autoFocus = false }: { className?: s
               }}
             >
               <span className="font-medium">{s.label}</span>
-              <span className="text-xs text-ink-soft">{s.type === "CATEGORY" ? "Category" : s.context}</span>
+              <span className="text-xs text-ink-soft">{s.type === "CATEGORY" ? t.search.category : s.context}</span>
             </li>
           ))}
         </ul>

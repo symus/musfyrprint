@@ -1,4 +1,5 @@
 import { brand } from "@/config/brand";
+import type { Locale } from "@/i18n/config";
 
 /**
  * Help and policy content. Legal texts are TEMPLATES that must be reviewed by a lawyer for every target
@@ -11,7 +12,7 @@ export interface ContentPage {
   sections: { heading: string; body: string[] }[];
 }
 
-export const PAGES: Record<string, ContentPage> = {
+const EN: Record<string, ContentPage> = {
   faq: {
     title: "Frequently asked questions",
     description: "Answers about designing, printing, sizing, delivery and returns.",
@@ -67,7 +68,7 @@ export const PAGES: Record<string, ContentPage> = {
     description: "Cookies and similar technologies we use.",
     legalReviewRequired: true,
     sections: [
-      { heading: "Strictly necessary cookies", body: ["mp_at (session, HttpOnly) keeps you signed in; XSRF-TOKEN protects forms against cross-site request forgery. These do not require consent."] },
+      { heading: "Strictly necessary cookies", body: ["mp_at (session, HttpOnly) keeps you signed in; XSRF-TOKEN protects forms against cross-site request forgery; NEXT_LOCALE remembers your language. These do not require consent."] },
       { heading: "Analytics and marketing", body: ["None are set today. If added, they will only load after you opt in through the cookie preferences banner."] },
     ],
   },
@@ -91,3 +92,90 @@ export const PAGES: Record<string, ContentPage> = {
     ],
   },
 };
+
+const PL: Record<string, ContentPage> = {
+  faq: {
+    title: "Najczęściej zadawane pytania",
+    description: "Odpowiedzi na pytania o projektowanie, druk, rozmiary, dostawę i zwroty.",
+    sections: [
+      { heading: "Jak długo trwa realizacja?", body: ["Każda strona produktu pokazuje czas realizacji (zwykle 2–6 dni roboczych). Do tego dochodzi czas dostawy, zależny od metody wybranej przy zamówieniu."] },
+      { heading: "Jakie pliki mogę wgrać?", body: ["Obsługujemy grafiki PNG, JPG i SVG. Aby nadruk był ostry, użyj co najmniej rozdzielczości podanej dla pola nadruku (zwykle 150–300 DPI w docelowym rozmiarze). Sprawdzamy każdy plik przed drukiem i skontaktujemy się, jeśli coś wymaga poprawy."] },
+      { heading: "Jak wybrać właściwy rozmiar?", body: ["Kieruj się wymiarami produktu, a nie samym oznaczeniem rozmiaru – oznaczenia różnią się między krajami i producentami. Rozmiary dziecięce według wieku są orientacyjne."] },
+      { heading: "Czy kolory będą dokładnie takie jak na ekranie?", body: ["Ekrany wyświetlają kolory różnie, a tkaniny różnie przyjmują tusz, dlatego wydrukowane kolory mogą nieznacznie różnić się od podglądu."] },
+      { heading: "Czy oferujecie rabaty hurtowe?", body: ["Tak. Przy zamówieniach od 10 sztuk poproś o wycenę na stronie Dla firm i hurt."] },
+    ],
+  },
+  shipping: {
+    title: "Informacje o dostawie",
+    description: "Metody, terminy i koszty dostawy.",
+    sections: [
+      { heading: "Dokąd wysyłamy", body: [`${brand.name} wysyła z Polski. Dostępne kraje, przewoźnicy i ceny są widoczne przy zamówieniu dla Twojego adresu.`] },
+      { heading: "Terminy dostawy", body: ["Szacowana data dostawy łączy czas realizacji produktu z czasem transportu przewoźnika. Szacunki nie są gwarantowane, zwłaszcza w okresach wzmożonego ruchu."] },
+      { heading: "Śledzenie przesyłki", body: ["Po nadaniu paczki otrzymasz link do śledzenia. Jeśli przewoźnik nie udostępnia śledzenia na żywo, pokazujemy ostatni status zarejestrowany przez nasz zespół."] },
+    ],
+  },
+  returns: {
+    title: "Zwroty i reklamacje",
+    description: "Co zrobić, jeśli coś jest nie tak.",
+    legalReviewRequired: true,
+    sections: [
+      { heading: "Produkty wadliwe lub niezgodne z zamówieniem", body: ["Jeśli produkt dotarł uszkodzony, z błędnym nadrukiem lub niezgodny z zamówieniem, skontaktuj się z nami w ciągu 14 dni, podając numer zamówienia i zdjęcia. Wydrukujemy go ponownie lub zwrócimy pieniądze."] },
+      { heading: "Produkty personalizowane", body: ["Ustawowe prawo odstąpienia od umowy w przypadku towarów wyprodukowanych według specyfikacji klienta różni się w zależności od kraju. Ta sekcja musi zostać uzupełniona po weryfikacji prawnej dla każdego rynku."] },
+      { heading: "Produkty bez personalizacji", body: ["Nienoszone produkty bez personalizacji możesz zwrócić w ustawowym terminie odstąpienia od umowy obowiązującym w Twoim kraju."] },
+    ],
+  },
+  privacy: {
+    title: "Polityka prywatności",
+    description: "Jak przetwarzamy Twoje dane osobowe.",
+    legalReviewRequired: true,
+    sections: [
+      { heading: "Administrator", body: [`${brand.name}, ${brand.address}. Kontakt: ${brand.supportEmail}.`] },
+      { heading: "Jakie dane przetwarzamy i dlaczego", body: ["Dane konta i zamówień – w celu realizacji umowy; wgrane grafiki – w celu wykonania zamówienia; dane do newslettera – wyłącznie za Twoją zgodą; logi techniczne – w celu zapewnienia bezpieczeństwa usługi."] },
+      { heading: "Twoje prawa", body: ["Masz prawo dostępu do danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia oraz sprzeciwu, a także do wycofania zgody w dowolnym momencie. Możesz też złożyć skargę do Prezesa UODO."] },
+      { heading: "Okres przechowywania", body: ["Dokumentację zamówień przechowujemy tak długo, jak wymagają tego przepisy podatkowe i rachunkowe; dane marketingowe – do czasu wypisania się."] },
+    ],
+  },
+  terms: {
+    title: "Regulamin sprzedaży",
+    description: "Zasady obowiązujące przy zamówieniach.",
+    legalReviewRequired: true,
+    sections: [
+      { heading: "Umowa", body: ["Umowa zostaje zawarta z chwilą potwierdzenia opłaconego zamówienia e-mailem. Ceny zawierają VAT, jeśli dotyczy; koszty dostawy są widoczne przed płatnością."] },
+      { heading: "Twoje treści", body: ["Potwierdzasz, że jesteś właścicielem lub masz prawo do używania wgranych grafik, tekstów, logotypów i zdjęć oraz że nie naruszają one naszych zasad dotyczących treści."] },
+    ],
+  },
+  cookies: {
+    title: "Polityka cookies",
+    description: "Pliki cookie i podobne technologie, których używamy.",
+    legalReviewRequired: true,
+    sections: [
+      { heading: "Niezbędne pliki cookie", body: ["mp_at (sesja, HttpOnly) utrzymuje zalogowanie; XSRF-TOKEN chroni formularze przed atakami CSRF; NEXT_LOCALE zapamiętuje wybrany język. Nie wymagają one zgody."] },
+      { heading: "Analityka i marketing", body: ["Obecnie nie są ustawiane. Jeśli zostaną dodane, załadują się dopiero po wyrażeniu zgody w ustawieniach cookies."] },
+    ],
+  },
+  "content-policy": {
+    title: "Zasady dotyczące grafik i treści",
+    description: "Co możemy, a czego nie możemy wydrukować.",
+    sections: [
+      { heading: "Prawa do grafik", body: ["Wgrywaj wyłącznie treści, które stworzyłeś lub na które masz licencję. Nie drukujemy postaci chronionych prawem autorskim, znaków towarowych ani logotypów bez zgody właściciela."] },
+      { heading: "Treści zabronione", body: ["Nie przyjmujemy mowy nienawiści, nękania, treści ekstremistycznych, treści seksualnych z udziałem nieletnich ani treści naruszających prywatność lub prawa własności intelektualnej. Zamówienia mogą być weryfikowane i odrzucane."] },
+      { heading: "Zgłoszenia naruszeń praw autorskich", body: [`Jeśli uważasz, że projekt narusza Twoje prawa, napisz na ${brand.supportEmail}, podając link do zamówienia lub projektu, dowód praw i dane kontaktowe.`] },
+    ],
+  },
+  contact: {
+    title: "Kontakt",
+    description: "Skontaktuj się z naszym zespołem.",
+    sections: [
+      { heading: "E-mail", body: [brand.supportEmail] },
+      { heading: "Telefon", body: [brand.supportPhone] },
+      { heading: "Adres", body: [brand.address] },
+      { heading: "Firmy i hurt", body: ["Przy zamówieniach od 10 sztuk najszybciej odpowiemy przez formularz wyceny na stronie Dla firm i hurt."] },
+    ],
+  },
+};
+
+export const PAGE_SLUGS = Object.keys(EN);
+
+export function getPages(locale: Locale): Record<string, ContentPage> {
+  return locale === "pl" ? PL : EN;
+}

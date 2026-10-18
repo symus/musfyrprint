@@ -1,7 +1,9 @@
-import Link from "next/link";
+"use client";
 
 import { GarmentArt } from "@/components/product/GarmentArt";
 import type { CategoryView } from "@/lib/api/types";
+import { Link, useI18n } from "@/i18n/client";
+import { plural } from "@/i18n/format";
 
 const ART: Record<string, { type: string; hex: string }> = {
   "t-shirts": { type: "TSHIRT", hex: "#FFFFFF" },
@@ -13,6 +15,7 @@ const ART: Record<string, { type: string; hex: string }> = {
 };
 
 export function CategoryTiles({ categories }: { categories: CategoryView[] }) {
+  const { t, intl } = useI18n();
   return (
     <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
       {categories.filter((c) => !c.parentSlug).map((c) => {
@@ -27,7 +30,7 @@ export function CategoryTiles({ categories }: { categories: CategoryView[] }) {
                 <GarmentArt garmentType={art.type} colorHex={art.hex} showPrint={false} className="w-4/5 transition group-hover:scale-110" title={c.name} />
               </span>
               <span className="font-display font-bold leading-tight">{c.name}</span>
-              <span className="text-xs text-ink-soft">{c.productCount} products</span>
+              <span className="text-xs text-ink-soft">{plural(intl, c.productCount, t.common.products)}</span>
             </Link>
           </li>
         );

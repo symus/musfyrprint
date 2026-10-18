@@ -1,74 +1,38 @@
-import Link from "next/link";
-
 import { Logo } from "@/components/brand/Logo";
 import { NewsletterForm } from "@/components/forms/NewsletterForm";
 import { brand } from "@/config/brand";
+import { Link } from "@/i18n/client";
+import { getI18n } from "@/i18n/server";
 
-const COLUMNS = [
-  {
-    title: "Shop",
-    links: [
-      { href: "/shop", label: "All products" },
-      { href: "/category/t-shirts", label: "T-shirts" },
-      { href: "/category/stickers", label: "Stickers" },
-      { href: "/collections", label: "Collections" },
-      { href: "/offers", label: "Offers" },
-    ],
-  },
-  {
-    title: "Create",
-    links: [
-      { href: "/design", label: "Design studio" },
-      { href: "/collections/family-matching", label: "Family matching" },
-      { href: "/collections/birthday-gifts", label: "Gifts" },
-      { href: "/custom-orders", label: "Bulk & business orders" },
-    ],
-  },
-  {
-    title: "Help",
-    links: [
-      { href: "/help/faq", label: "FAQ" },
-      { href: "/help/shipping", label: "Shipping" },
-      { href: "/help/returns", label: "Returns & refunds" },
-      { href: "/help/contact", label: "Contact us" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { href: "/help/terms", label: "Terms of sale" },
-      { href: "/help/privacy", label: "Privacy policy" },
-      { href: "/help/cookies", label: "Cookie policy" },
-      { href: "/help/content-policy", label: "Artwork & content policy" },
-    ],
-  },
-];
-
-export function SiteFooter() {
+export async function SiteFooter() {
+  const { t } = await getI18n();
+  const f = t.footer;
+  const columns = [
+    { title: f.shop, links: [["/shop", f.allProducts], ["/category/t-shirts", f.tshirts], ["/category/stickers", f.stickers], ["/collections", t.nav.collections], ["/offers", t.nav.offers]] },
+    { title: f.create, links: [["/design", f.studio], ["/collections/family-matching", f.familyMatching], ["/collections/birthday-gifts", f.gifts], ["/custom-orders", f.bulk]] },
+    { title: f.help, links: [["/help/faq", f.faq], ["/help/shipping", f.shipping], ["/help/returns", f.returns], ["/help/contact", f.contact]] },
+    { title: f.legal, links: [["/help/terms", f.terms], ["/help/privacy", f.privacy], ["/help/cookies", f.cookies], ["/help/content-policy", f.contentPolicy]] },
+  ];
   const social = Object.entries(brand.social).filter(([, url]) => url);
   return (
     <footer className="mt-24 bg-ink text-paper">
       <div className="container-page grid gap-12 py-14 lg:grid-cols-[1.2fr_2fr]">
         <div className="space-y-5">
           <Logo />
-          <p className="max-w-sm text-paper/80">{brand.tagline} Personalised apparel and stickers, printed to order.</p>
+          <p className="max-w-sm text-paper/80">{t.brand.tagline} {f.blurb}</p>
           <div className="rounded-2xl bg-white/5 p-5">
-            <p className="font-display text-lg font-bold">Get ideas & offers</p>
-            <p className="mb-3 text-sm text-paper/70">New templates, seasonal drops and member-only codes.</p>
+            <p className="font-display text-lg font-bold">{f.newsletterTitle}</p>
+            <p className="mb-3 text-sm text-paper/70">{f.newsletterText}</p>
             <NewsletterForm source="footer" tone="dark" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
-          {COLUMNS.map((col) => (
+          {columns.map((col) => (
             <nav key={col.title} aria-label={col.title}>
               <h2 className="mb-3 font-display text-base font-bold text-sun">{col.title}</h2>
               <ul className="space-y-2 text-sm text-paper/80">
-                {col.links.map((l) => (
-                  <li key={l.href}>
-                    <Link href={l.href} className="hover:text-paper hover:underline">
-                      {l.label}
-                    </Link>
-                  </li>
+                {col.links.map(([href, label]) => (
+                  <li key={href}><Link href={href} className="hover:text-paper hover:underline">{label}</Link></li>
                 ))}
               </ul>
             </nav>
@@ -87,11 +51,7 @@ export function SiteFooter() {
           {social.length > 0 && (
             <ul className="flex gap-4">
               {social.map(([name, url]) => (
-                <li key={name}>
-                  <a href={url} rel="noopener noreferrer" target="_blank" className="capitalize hover:underline">
-                    {name}
-                  </a>
-                </li>
+                <li key={name}><a href={url} rel="noopener noreferrer" target="_blank" className="capitalize hover:underline">{name}</a></li>
               ))}
             </ul>
           )}
