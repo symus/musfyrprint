@@ -21,8 +21,8 @@ export async function BusinessBanner() {
           </Link>
         </div>
         <div className="relative hidden h-56 md:block" aria-hidden="true">
-          <GarmentArt garmentType="TSHIRT" colorHex="#FFFFFF" className="absolute left-0 top-0 w-1/2 -rotate-6" />
-          <GarmentArt garmentType="TOTE" colorHex="#EFE6D2" className="absolute bottom-0 right-8 w-1/2 rotate-6" />
+          <GarmentArt printText={t.art.yourIdea} garmentType="TSHIRT" colorHex="#FFFFFF" className="absolute left-0 top-0 w-1/2 -rotate-6" />
+          <GarmentArt printText={t.art.yourIdea} garmentType="TOTE" colorHex="#EFE6D2" className="absolute bottom-0 right-8 w-1/2 rotate-6" />
         </div>
       </div>
     </section>

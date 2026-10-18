@@ -24,10 +24,10 @@ export async function SiteHeader() {
       </a>
       <div className="container-page flex h-16 items-center gap-3">
         <Link href="/" aria-label={t.nav.home} className="shrink-0"><Logo /></Link>
-        <Suspense fallback={<nav className="hidden flex-1 xl:block" aria-label={t.nav.main} />}>
+        <Suspense fallback={<nav className="hidden flex-1 xl:block xl:mr-auto" aria-label={t.nav.main} />}>
           <CategoryNav extra={staticLinks.slice(1, 2)} label={t.nav.main} />
         </Suspense>
-        <SearchBox className="ml-auto hidden w-56 md:block" />
+        <SearchBox className="ml-auto hidden w-56 md:block xl:hidden 2xl:block" />
         <Suspense fallback={<LanguageSwitcherFallback locale={locale} />}>
           <LanguageSwitcher />
         </Suspense>
@@ -54,7 +54,7 @@ async function topCategories() {
 async function CategoryNav({ extra, label }: { extra: { href: string; label: string }[]; label: string }) {
   const categories = await topCategories();
   return (
-    <nav aria-label={label} className="hidden flex-1 xl:block">
+    <nav aria-label={label} className="hidden flex-1 xl:block xl:mr-auto">
       <ul className="flex items-center gap-0.5 whitespace-nowrap text-sm font-semibold">
         {[...categories.map((c) => ({ href: `/category/${c.slug}`, label: c.name })), ...extra].map((l) => (
           <li key={l.href}>

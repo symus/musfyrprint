@@ -22,9 +22,10 @@ const pl: Messages = {
     titleA: "Twoje pomysły,", titleB: "Twój styl.",
     text: "Personalizowane koszulki, bluzy, ubranka dla niemowląt i naklejki. Zacznij od szablonu lub wgraj własną grafikę – każdą sztukę drukujemy na zamówienie.",
     ctaDesign: "Zaprojektuj własny", ctaShop: "Przeglądaj produkty",
-    trust: ["Rozmiary od niemowląt po dorosłych", "Szablony lub Twoja grafika", "Szyte na zamówienie"],
+    trust: ["Rozmiary od niemowląt po dorosłych", "Szablony lub Twoja grafika", "Drukowane na zamówienie"],
   },
   promo: { useCode: "użyj kodu" },
+  art: { yourIdea: "twój pomysł" },
   home: {
     categories: "Kategorie",
     featuredEyebrow: "Polecane", featuredTitle: "Gotowe na Twój projekt", featuredText: "Nasze ulubione produkty wybrane ze względu na jakość druku i wygodę.",

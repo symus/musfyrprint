@@ -39,12 +39,15 @@ export function GarmentArt({
   className,
   title,
   showPrint = true,
+  printText = "your idea",
 }: {
   garmentType: string;
   colorHex?: string;
   className?: string;
   title?: string;
   showPrint?: boolean;
+  /** Placeholder text drawn on the chest print (localised by the caller). */
+  printText?: string;
 }) {
   const id = useId().replace(/:/g, "");
   const light = isLight(colorHex);
@@ -74,7 +77,7 @@ export function GarmentArt({
           <path d="M-9 -3 a3 3 0 1 0 0.1 0 M9 -3 a3 3 0 1 0 0.1 0" fill={"#17142B"} />
           <path d="M-10 6 Q0 16 10 6" stroke="#17142B" strokeWidth="3" fill="none" strokeLinecap="round" />
           <text y="44" textAnchor="middle" fontFamily="var(--font-display)" fontWeight="800" fontSize="14" fill={ink}>
-            your idea
+            {printText}
           </text>
         </g>
       )}

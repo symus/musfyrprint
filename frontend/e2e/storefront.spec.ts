@@ -32,11 +32,19 @@ test.describe("storefront", () => {
   });
 
   test("search autocomplete tolerates typos", async ({ page }) => {
+    await page.setViewportSize({ width: 1600, height: 900 }); // header search shows from 2xl
     await page.goto("/en");
     const search = page.getByRole("combobox", { name: "Search products" }).first();
     await search.fill("hodie");
     await page.getByRole("option", { name: /Pullover Hoodie/ }).click();
     await expect(page).toHaveURL(/\/products\/pullover-hoodie/);
+  });
+
+  test("shop page search works at laptop width", async ({ page }) => {
+    await page.goto("/en/shop");
+    await page.getByRole("main").getByRole("combobox", { name: "Search products" }).fill("tote");
+    await page.getByRole("option", { name: /Everyday Cotton Tote/ }).click();
+    await expect(page).toHaveURL(/\/en\/products\/everyday-tote/);
   });
 
   test("product page variant selection reflects stock and price", async ({ page }) => {

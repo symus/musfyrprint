@@ -55,6 +55,7 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
     <div className="grid gap-10 lg:grid-cols-2">
       <div className="card sticky top-20 flex aspect-square items-center justify-center self-start bg-cloud p-8">
         <GarmentArt
+          printText={t.art.yourIdea}
           garmentType={product.garmentType}
           colorHex={color?.hex ?? "#FFFFFF"}
           title={`${product.name}${color ? ` ${t.product.in} ${color.name}` : ""}`}

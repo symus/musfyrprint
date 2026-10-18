@@ -24,6 +24,7 @@ const en = {
     trust: ["Baby to adult sizing", "Templates or your art", "Made to order"],
   },
   promo: { useCode: "use code" },
+  art: { yourIdea: "your idea" },
   home: {
     categories: "Categories",
     featuredEyebrow: "Featured", featuredTitle: "Ready for your design", featuredText: "Our favourite blanks, chosen for print quality and comfort.",

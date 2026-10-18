@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { CatalogBrowser } from "@/components/catalog/CatalogBrowser";
+import { SearchBox } from "@/components/layout/SearchBox";
 import { alternates, getI18n } from "@/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,6 +18,7 @@ export default async function ShopPage({ searchParams }: PageProps<"/[locale]/sh
       <Suspense fallback={<p className="mb-8 text-ink-soft">{t.catalog.shopIntro}</p>}>
         <SearchSummary searchParams={searchParams} />
       </Suspense>
+      <SearchBox className="mb-8 max-w-xl" />
       <CatalogBrowser pathname="/shop" searchParams={searchParams} />
     </div>
   );

@@ -46,10 +46,10 @@ export async function Hero() {
         <div className="relative mx-auto aspect-square w-full max-w-lg" aria-hidden="true">
           <div className="absolute inset-[8%] rotate-3 rounded-[3rem] bg-coral" />
           <div className="absolute inset-[8%] -rotate-3 rounded-[3rem] border-4 border-ink bg-paper" />
-          <GarmentArt garmentType="TSHIRT" colorHex="#6A4DF4" className="absolute left-[14%] top-[12%] w-[62%] animate-float" />
-          <GarmentArt garmentType="BODYSUIT" colorHex="#FFC23C" className="absolute bottom-[8%] left-[4%] w-[34%] -rotate-6 animate-float [animation-delay:-2s]" />
+          <GarmentArt printText={t.art.yourIdea} garmentType="TSHIRT" colorHex="#6A4DF4" className="absolute left-[14%] top-[12%] w-[62%] animate-float" />
+          <GarmentArt printText={t.art.yourIdea} garmentType="BODYSUIT" colorHex="#FFC23C" className="absolute bottom-[8%] left-[4%] w-[34%] -rotate-6 animate-float [animation-delay:-2s]" />
           <GarmentArt garmentType="HOODIE" colorHex="#2EC4A6" showPrint={false} className="absolute bottom-[6%] right-[4%] w-[40%] rotate-6 animate-float [animation-delay:-4s]" />
-          <GarmentArt garmentType="STICKER_DIE_CUT" className="absolute right-[6%] top-[4%] w-[26%] rotate-12" />
+          <GarmentArt printText={t.art.yourIdea} garmentType="STICKER_DIE_CUT" className="absolute right-[6%] top-[4%] w-[26%] rotate-12" />
         </div>
       </div>
     </section>

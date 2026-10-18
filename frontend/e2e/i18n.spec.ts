@@ -34,6 +34,7 @@ test.describe("languages", () => {
   });
 
   test("Polish search, filters and validation messages", async ({ page }) => {
+    await page.setViewportSize({ width: 1600, height: 900 }); // header search shows from 2xl
     await page.goto("/pl");
     await page.getByRole("combobox", { name: "Szukaj produktów" }).first().fill("naklejk");
     await expect(page.getByRole("option", { name: /Naklejka/ }).first()).toBeVisible();

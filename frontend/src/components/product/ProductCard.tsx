@@ -16,6 +16,7 @@ export function ProductCard({ product, index = 0 }: { product: ProductSummary; i
     <article className="group card relative flex flex-col overflow-hidden transition hover:-translate-y-1 hover:shadow-[var(--shadow-pop)]">
       <div className={`relative aspect-square ${BG[index % BG.length]}`}>
         <GarmentArt
+          printText={t.art.yourIdea}
           garmentType={product.garmentType}
           colorHex={lead?.hex}
           title={`${product.name}${lead ? ` ${t.product.in} ${lead.name}` : ""}`}
