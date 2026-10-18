@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: ${TEST_DB_URL:jdbc:postgresql://localhost:5432/musfyr_test}
+    username: ${TEST_DB_USERNAME:musfyr}
+    password: ${TEST_DB_PASSWORD:musfyr}
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed
+    clean-disabled: false
+  cache:
+    type: none
+app:
+  security:
+    jwt-secret: test-secret-test-secret-test-secret-0123456789
+    cookie-secure: false
+    cors-allowed-origins: http://localhost:3000
+  bootstrap-admin:
+    email: admin@test.local
+    password: Test-Admin-Password-1
+logging:
+  level:
+    org.flywaydb: WARN

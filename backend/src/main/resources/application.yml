@@ -1,0 +1,129 @@
+spring:
+  application:
+    name: musfyr-print-backend
+  profiles:
+    default: dev
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/musfyr}
+    username: ${DB_USERNAME:musfyr}
+    password: ${DB_PASSWORD:musfyr}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_batch_fetch_size: 50
+        jdbc.time_zone: UTC
+  flyway:
+    locations: classpath:db/migration
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=2000,expireAfterWrite=10m
+  threads:
+    virtual:
+      enabled: true
+  mvc:
+    problemdetails:
+      enabled: true
+  jackson:
+    deserialization:
+      # Omitted boolean / numeric fields fall back to false / 0 instead of rejecting the request.
+      fail-on-null-for-primitives: false
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+  forward-headers-strategy: framework
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  info:
+    env:
+      enabled: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.musfyr: INFO
+
+app:
+  brand:
+    name: ${BRAND_NAME:musfyr print}
+    tagline: ${BRAND_TAGLINE:Create It. Wear It. Stick It.}
+    support-email: ${BRAND_SUPPORT_EMAIL:hello@example.com}
+    support-phone: ${BRAND_SUPPORT_PHONE:+48 000 000 000}
+    address: ${BRAND_ADDRESS:Registered address to be configured}
+    social:
+      instagram: ${BRAND_SOCIAL_INSTAGRAM:}
+      facebook: ${BRAND_SOCIAL_FACEBOOK:}
+      tiktok: ${BRAND_SOCIAL_TIKTOK:}
+      pinterest: ${BRAND_SOCIAL_PINTEREST:}
+  commerce:
+    default-currency: ${DEFAULT_CURRENCY:PLN}
+    default-locale: ${DEFAULT_LOCALE:pl-PL}
+    supported-currencies: ${SUPPORTED_CURRENCIES:PLN,EUR}
+    supported-locales: ${SUPPORTED_LOCALES:pl-PL,en-GB}
+    default-size-system: ${DEFAULT_SIZE_SYSTEM:EU}
+  security:
+    jwt-secret: ${JWT_SECRET:}
+    jwt-issuer: ${JWT_ISSUER:musfyr-print}
+    access-token-ttl: ${ACCESS_TOKEN_TTL:PT2H}
+    cookie-secure: ${COOKIE_SECURE:true}
+    cookie-same-site: ${COOKIE_SAME_SITE:Lax}
+    cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+    max-failed-logins: 5
+    lockout-duration: PT15M
+  bootstrap-admin:
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+    display-name: ${BOOTSTRAP_ADMIN_NAME:Store Admin}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed
+app:
+  security:
+    # Development-only fallback. Production refuses to start without JWT_SECRET (see SecurityProperties).
+    jwt-secret: ${JWT_SECRET:dev-only-insecure-secret-change-me-0123456789abcdef}
+    cookie-secure: ${COOKIE_SECURE:false}
+    cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  bootstrap-admin:
+    email: ${BOOTSTRAP_ADMIN_EMAIL:admin@musfyr.local}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:ChangeMe-Admin-2026!}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+logging:
+  structured:
+    format:
+      console: ecs
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8081}
