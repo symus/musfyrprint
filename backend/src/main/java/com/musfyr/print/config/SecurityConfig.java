@@ -72,7 +72,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/me").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/logout",
                                 "/api/v1/newsletter/subscriptions", "/api/v1/quotes",
-                                "/api/v1/catalog/products/*/size-recommendation").permitAll()
+                                "/api/v1/catalog/products/*/size-recommendation", "/api/v1/artworks",
+                                "/api/v1/designs").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/designs/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().denyAll())
@@ -135,7 +137,7 @@ public class SecurityConfig {
         List<String> origins = props.security().corsAllowedOrigins();
         config.setAllowedOrigins(origins == null ? List.of() : origins.stream().filter(StringUtils::hasText).toList());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN", "X-Request-Id", "Authorization"));
+        config.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN", "X-Request-Id", "Authorization", "X-Design-Token"));
         config.setExposedHeaders(List.of("X-Request-Id", "Retry-After"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);

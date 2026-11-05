@@ -8,9 +8,10 @@ import { connection } from "next/server";
  * In production a load balancer can route /api/* straight to the backend instead; this handler then idles.
  */
 const API_BASE = process.env.API_INTERNAL_URL ?? "http://localhost:8080";
-const FORWARD_REQUEST_HEADERS = ["accept", "content-type", "cookie", "x-xsrf-token", "x-request-id", "authorization", "accept-language", "user-agent"];
-const FORWARD_RESPONSE_HEADERS = ["content-type", "cache-control", "retry-after", "x-request-id", "location"];
+const FORWARD_REQUEST_HEADERS = ["accept", "content-type", "cookie", "x-xsrf-token", "x-request-id", "authorization", "accept-language", "user-agent", "x-design-token"];
+const FORWARD_RESPONSE_HEADERS = ["content-type", "cache-control", "retry-after", "x-request-id", "location", "content-security-policy", "content-disposition"];
 const MAX_BODY_BYTES = 1_000_000;
+const MAX_UPLOAD_BYTES = 11 * 1024 * 1024; // artwork uploads: 10 MB file + multipart overhead
 
 async function proxy(request: Request, { params }: { params: Promise<{ path: string[] }> }) {
   await connection();
@@ -34,7 +35,8 @@ async function proxy(request: Request, { params }: { params: Promise<{ path: str
   let body: ArrayBuffer | undefined;
   if (!["GET", "HEAD"].includes(request.method)) {
     body = await request.arrayBuffer();
-    if (body.byteLength > MAX_BODY_BYTES) {
+    const limit = path[1] === "artworks" ? MAX_UPLOAD_BYTES : MAX_BODY_BYTES;
+    if (body.byteLength > limit) {
       return Response.json({ title: "Payload Too Large", status: 413 }, { status: 413 });
     }
   }
