@@ -25,7 +25,7 @@ Legend: ✅ done · 🟡 partial / prepared · ⬜ not started. Nothing marked �
 
 ## Phase 2 — Design experience 🟡 (in progress)
 
-**Done:** ✅ International sizing – per-product reference size charts (body ranges + garment measurements), EU/UK/US/CN/IN labels stored per row (never auto-converted), cm/in, measuring guide, size finder (`SizeRecommender`, chest > height > waist; age for children), remembered size system. ✅ Render Blueprint (`render.yaml`).
+**Done:** ✅ International sizing – per-product reference size charts (body ranges + garment measurements), EU/UK/US/CN/IN labels stored per row (never auto-converted), cm/in, measuring guide, size finder (`SizeRecommender`, chest > height > waist; age for children), remembered size system. ✅ Render Blueprint (`render.yaml`). ✅ Artwork uploads (content-sniffed PNG/JPG/SVG, SVG safety, rights confirmation, scan hook), token-owned design drafts with server print checks, 13 original templates (EN/PL). ✅ Design studio (Fabric.js): print-area tabs, text with 7 OFL fonts/effects, shapes, uploads, templates, layers (lock/hide/order), properties, undo/redo, zoom, centre snapping, safe-zone overlay, live print checks, colour preview, save/reload/save-as-copy, print-preview PNG export.
 
 Decisions for Phase 2 (no licensed 3D models or print supplier yet):
 * 3D: procedurally generated placeholder garment meshes with proper UV print zones, swappable for licensed

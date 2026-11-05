@@ -68,11 +68,8 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
   const sizes = Array.from(new Set(product.variants.map((v) => v.sizeCode)));
   const isAgeSized = sizes.some((s) => /^\d+(-\d+)?[MY]$/.test(s));
 
-  const designHref = `/design?${new URLSearchParams({
-    product: product.slug,
-    ...(colorCode ? { color: colorCode } : {}),
-    ...(sizeCode ? { size: sizeCode } : {}),
-  })}`;
+  const designQuery = new URLSearchParams({ ...(colorCode ? { color: colorCode } : {}), ...(sizeCode ? { size: sizeCode } : {}) }).toString();
+  const designHref = `/design/${product.slug}${designQuery ? `?${designQuery}` : ""}`;
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
