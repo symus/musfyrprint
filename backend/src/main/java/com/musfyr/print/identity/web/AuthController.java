@@ -37,10 +37,12 @@ public class AuthController {
 
     private final AuthService authService;
     private final AuthCookies cookies;
+    private final com.musfyr.print.commerce.CartService carts;
 
-    public AuthController(AuthService authService, AuthCookies cookies) {
+    public AuthController(AuthService authService, AuthCookies cookies, com.musfyr.print.commerce.CartService carts) {
         this.authService = authService;
         this.cookies = cookies;
+        this.carts = carts;
     }
 
     @GetMapping("/csrf")
@@ -51,8 +53,9 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Log in with e-mail and password", description = "Sets an HttpOnly session cookie.")
-    public ResponseEntity<SessionResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<SessionResponse> login(@Valid @RequestBody LoginRequest request, jakarta.servlet.http.HttpServletRequest http) {
         AuthService.LoginResult result = authService.login(request.email(), request.password());
+        carts.mergeOnLogin(com.musfyr.print.commerce.CommerceController.cookieCartPublic(http), result.user().getId());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE,
                         cookies.accessToken(result.token().value(), result.token().expiresAt()).toString())
@@ -97,7 +100,7 @@ public class AuthController {
     }
 
     public record SessionResponse(UserView user, Instant expiresAt) {
-        static SessionResponse of(User user, Instant expiresAt) {
+        public static SessionResponse of(User user, Instant expiresAt) {
             return new SessionResponse(new UserView(user.getId(), user.getEmail(), user.getDisplayName(),
                     user.getRoles().stream().map(Enum::name).sorted().toList()), expiresAt);
         }

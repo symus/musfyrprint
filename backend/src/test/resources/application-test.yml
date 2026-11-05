@@ -16,6 +16,12 @@ app:
   bootstrap-admin:
     email: admin@test.local
     password: Test-Admin-Password-1
+  payments:
+    p24:
+      mode: SIMULATOR
+      merchant-id: 22222
+      api-key: test-api-key
+      crc-key: test-crc-key
 logging:
   level:
     org.flywaydb: WARN

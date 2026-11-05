@@ -39,6 +39,12 @@ public class AuditService {
         recordAs(actorId, actorEmail, action, entityType, entityId, details);
     }
 
+    /** For callers outside a transaction: records in its own transaction. */
+    @Transactional
+    public void recordStandalone(String action, String entityType, String entityId) {
+        record(action, entityType, entityId, null);
+    }
+
     @Transactional(propagation = Propagation.MANDATORY)
     public void recordAs(UUID actorId, String actorEmail, String action, String entityType, String entityId,
                          Map<String, ?> details) {

@@ -102,6 +102,24 @@ app:
     email: ${BOOTSTRAP_ADMIN_EMAIL:}
     password: ${BOOTSTRAP_ADMIN_PASSWORD:}
     display-name: ${BOOTSTRAP_ADMIN_NAME:Store Admin}
+  shop:
+    public-site-url: ${PUBLIC_SITE_URL:http://localhost:3000}
+    public-api-url: ${PUBLIC_API_URL:http://localhost:8080}
+    tax:
+      # EXEMPT = not VAT-registered (art. 113 small-business exemption); STANDARD = prices include VAT
+      mode: ${TAX_MODE:EXEMPT}
+      standard-rate-percent: ${TAX_STANDARD_RATE:23}
+    mail:
+      from: ${MAIL_FROM:no-reply@example.com}
+  payments:
+    p24:
+      # DISABLED | SIMULATOR (test page, no money) | SANDBOX | PRODUCTION
+      mode: ${P24_MODE:DISABLED}
+      merchant-id: ${P24_MERCHANT_ID:0}
+      pos-id: ${P24_POS_ID:0}
+      api-key: ${P24_API_KEY:}
+      crc-key: ${P24_CRC_KEY:}
+      notification-ips: ${P24_NOTIFICATION_IPS:}
 
 ---
 spring:
@@ -122,6 +140,12 @@ app:
   bootstrap-admin:
     email: ${BOOTSTRAP_ADMIN_EMAIL:admin@musfyr.local}
     password: ${BOOTSTRAP_ADMIN_PASSWORD:ChangeMe-Admin-2026!}
+  payments:
+    p24:
+      mode: ${P24_MODE:SIMULATOR}
+      merchant-id: ${P24_MERCHANT_ID:11111}
+      api-key: ${P24_API_KEY:dev-simulator-api-key}
+      crc-key: ${P24_CRC_KEY:dev-simulator-crc-key}
 
 ---
 # "demo": production settings plus the sample catalogue, for preview deployments (e.g. prod,demo on Render).
@@ -132,6 +156,14 @@ spring:
   flyway:
     locations: classpath:db/migration,classpath:db/seed
     out-of-order: true
+app:
+  payments:
+    p24:
+      # Demo deployments use the built-in test payment page unless real sandbox keys are configured.
+      mode: ${P24_MODE:SIMULATOR}
+      merchant-id: ${P24_MERCHANT_ID:11111}
+      api-key: ${P24_API_KEY:demo-simulator-api-key}
+      crc-key: ${P24_CRC_KEY:demo-simulator-crc-key}
 
 ---
 spring:

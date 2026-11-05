@@ -59,7 +59,10 @@ public class SecurityConfig {
         http
                 .cors(cors -> {
                 })
-                .csrf(csrf -> csrf.spa())
+                .csrf(csrf -> csrf.spa()
+                        // server-to-server payment notifications are authenticated by signature + verify call;
+                        // the payment simulator (dev/demo only) posts its own test form
+                        .ignoringRequestMatchers("/api/v1/payments/p24/notify", "/dev/p24-simulator/**"))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp.policyDirectives("frame-ancestors 'none'"))
@@ -69,12 +72,16 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").hasRole(Role.ADMIN.name())
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasAnyRole(Role.STAFF)
-                        .requestMatchers("/api/v1/auth/me").authenticated()
+                        .requestMatchers("/api/v1/auth/me", "/api/v1/account/**").authenticated()
+                        .requestMatchers("/dev/p24-simulator/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/logout",
                                 "/api/v1/newsletter/subscriptions", "/api/v1/quotes",
                                 "/api/v1/catalog/products/*/size-recommendation", "/api/v1/artworks",
-                                "/api/v1/designs").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/designs/*").permitAll()
+                                "/api/v1/designs", "/api/v1/auth/register", "/api/v1/auth/verify-email",
+                                "/api/v1/auth/password-reset/**", "/api/v1/cart/**", "/api/v1/checkout",
+                                "/api/v1/orders/*/pay", "/api/v1/payments/p24/notify").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/designs/*", "/api/v1/cart/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/cart/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().denyAll())
@@ -137,7 +144,7 @@ public class SecurityConfig {
         List<String> origins = props.security().corsAllowedOrigins();
         config.setAllowedOrigins(origins == null ? List.of() : origins.stream().filter(StringUtils::hasText).toList());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN", "X-Request-Id", "Authorization", "X-Design-Token"));
+        config.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN", "X-Request-Id", "Authorization", "X-Design-Token", "Idempotency-Key"));
         config.setExposedHeaders(List.of("X-Request-Id", "Retry-After"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);

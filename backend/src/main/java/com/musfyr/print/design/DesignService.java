@@ -91,6 +91,26 @@ public class DesignService {
         return load(id, check.warnings());
     }
 
+    /** Loads a design for the cart/checkout after checking its edit token (not found otherwise). */
+    @Transactional(readOnly = true)
+    public DesignView access(UUID id, String token) {
+        return get(id, token);
+    }
+
+    /** Loads a design the shop already holds a reference to (cart line or order), with fresh print checks. */
+    @Transactional(readOnly = true)
+    public DesignView internal(UUID id) {
+        DesignView stored = load(id, List.of());
+        return load(id, check(stored.document(), product(stored.productSlug())).warnings());
+    }
+
+    @Transactional
+    public void markOrdered(java.util.Collection<UUID> ids) {
+        if (!ids.isEmpty()) {
+            jdbc.sql("UPDATE designs SET status = 'ORDERED', updated_at = now() WHERE id IN (:ids)").param("ids", ids).update();
+        }
+    }
+
     @Transactional
     public DesignView update(UUID id, String token, DesignRequest req) {
         rateLimiter.check("design-update", RequestContext.clientIp(), 600, Duration.ofHours(1));
