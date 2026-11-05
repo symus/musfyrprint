@@ -71,7 +71,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/admin/**").hasAnyRole(Role.STAFF)
                         .requestMatchers("/api/v1/auth/me").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/logout",
-                                "/api/v1/newsletter/subscriptions", "/api/v1/quotes").permitAll()
+                                "/api/v1/newsletter/subscriptions", "/api/v1/quotes",
+                                "/api/v1/catalog/products/*/size-recommendation").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().denyAll())

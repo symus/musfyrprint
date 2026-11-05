@@ -199,3 +199,37 @@ export interface ProblemDetail {
   correlationId?: string;
   errors?: { field: string; message: string }[];
 }
+
+export type SizeSystem = "EU" | "UK" | "US" | "CN" | "IN";
+
+export interface MeasureRange {
+  min: number | null;
+  max: number | null;
+}
+
+export interface SizeChartRow {
+  sizeCode: string;
+  ageMinMonths: number | null;
+  ageMaxMonths: number | null;
+  height: MeasureRange | null;
+  chest: MeasureRange | null;
+  waist: MeasureRange | null;
+  garmentWidth: number | null;
+  garmentLength: number | null;
+  labels: Partial<Record<SizeSystem, string>>;
+}
+
+export interface SizeChart {
+  source: "REFERENCE" | "SUPPLIER";
+  supplierName: string | null;
+  fitNote: string | null;
+  systems: SizeSystem[];
+  rows: SizeChartRow[];
+}
+
+export interface SizeRecommendation {
+  sizeCode: string | null;
+  confidence: "HIGH" | "MEDIUM" | "LOW";
+  alternativeSizeCode: string | null;
+  reasons: string[];
+}

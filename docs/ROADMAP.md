@@ -23,7 +23,9 @@ Legend: ✅ done · 🟡 partial / prepared · ⬜ not started. Nothing marked �
 * Translated catalogue content (JSONB `i18n` columns), multilingual full-text search, localised validation errors.
 * Polish help/legal templates (still flagged for legal review).
 
-## Phase 2 — Design experience ⬜ (next)
+## Phase 2 — Design experience 🟡 (in progress)
+
+**Done:** ✅ International sizing – per-product reference size charts (body ranges + garment measurements), EU/UK/US/CN/IN labels stored per row (never auto-converted), cm/in, measuring guide, size finder (`SizeRecommender`, chest > height > waist; age for children), remembered size system. ✅ Render Blueprint (`render.yaml`).
 
 Decisions for Phase 2 (no licensed 3D models or print supplier yet):
 * 3D: procedurally generated placeholder garment meshes with proper UV print zones, swappable for licensed

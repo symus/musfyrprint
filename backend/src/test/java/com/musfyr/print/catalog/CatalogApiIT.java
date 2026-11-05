@@ -130,4 +130,34 @@ class CatalogApiIT {
         mvc.perform(get("/api/v1/catalog/suggest").param("q", "naklejka").header("Accept-Language", "pl"))
                 .andExpect(jsonPath("$[*].slug", hasItem("transparent-sticker")));
     }
+
+    @Test
+    void sizeChartHasRegionalLabelsAndOnlySoldSizes() throws Exception {
+        mvc.perform(get("/api/v1/catalog/products/womens-fitted-tee/size-chart").header("Accept-Language", "pl"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.source", is("REFERENCE")))
+                .andExpect(jsonPath("$.systems", org.hamcrest.Matchers.contains("EU", "UK", "US", "CN", "IN")))
+                .andExpect(jsonPath("$.rows.length()", is(6)))
+                .andExpect(jsonPath("$.rows[1].labels.UK", is("8–10")))
+                .andExpect(jsonPath("$.fitNote", org.hamcrest.Matchers.startsWith("Dopasowany")));
+        mvc.perform(get("/api/v1/catalog/products/everyday-tote/size-chart")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void recommendsSizeFromMeasurements() throws Exception {
+        var csrf = mvc.perform(get("/api/v1/auth/csrf")).andReturn().getResponse().getCookie("XSRF-TOKEN");
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .post("/api/v1/catalog/products/classic-unisex-tee/size-recommendation")
+                        .cookie(csrf).header("X-XSRF-TOKEN", csrf.getValue())
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{\"heightCm\":176,\"chestCm\":98}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sizeCode", is("M")))
+                .andExpect(jsonPath("$.confidence", is("HIGH")));
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .post("/api/v1/catalog/products/classic-unisex-tee/size-recommendation")
+                        .cookie(csrf).header("X-XSRF-TOKEN", csrf.getValue())
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest());
+    }
 }

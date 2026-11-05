@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Clock, Info, Palette, Printer } from "lucide-react";
 
-import type { ProductDetail } from "@/lib/api/types";
+import type { ProductDetail, SizeChart, SizeSystem } from "@/lib/api/types";
+import { SizeGuide } from "@/components/sizing/SizeGuide";
+import { defaultSystem, loadSystem, saveSystem } from "@/components/sizing/units";
 import { Link, useI18n } from "@/i18n/client";
 import { fmt } from "@/i18n/format";
 import { GarmentArt } from "./GarmentArt";
@@ -24,7 +26,28 @@ const AVAILABILITY_CLASS = {
  * at checkout.
  */
 export function ProductConfigurator({ product }: { product: ProductDetail }) {
-  const { t, intl } = useI18n();
+  const { t, intl, locale } = useI18n();
+  const [chart, setChart] = useState<SizeChart | null>(null);
+  const [system, setSystem] = useState<SizeSystem>(defaultSystem(locale));
+
+  // Size chart + remembered size system load after hydration (both are optional enhancements).
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetch(`/api/v1/catalog/products/${product.slug}/size-chart`, { headers: { "Accept-Language": locale }, signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((c: SizeChart | null) => {
+        if (!c) return;
+        setSystem(loadSystem(defaultSystem(locale)));
+        setChart(c);
+      })
+      .catch(() => undefined);
+    return () => ctrl.abort();
+  }, [product.slug, locale]);
+  const changeSystem = (s: SizeSystem) => {
+    setSystem(s);
+    saveSystem(s);
+  };
+  const regionalLabel = (code: string) => chart?.rows.find((r) => r.sizeCode === code)?.labels[system];
   const [colorCode, setColorCode] = useState(product.colors[0]?.code ?? null);
   const [sizeCode, setSizeCode] = useState<string | null>(null);
   const [options, setOptions] = useState<Record<string, string>>(() =>
@@ -94,7 +117,14 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
         )}
 
         <fieldset className="mt-8">
-          <legend className="mb-3 text-sm font-bold">{t.product.size}</legend>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <legend className="text-sm font-bold">
+              {t.product.size}{chart && <span className="font-normal text-ink-soft"> · {t.sizing.regions[system]}</span>}
+            </legend>
+            {chart && (
+              <SizeGuide slug={product.slug} chart={chart} system={system} onSystemChange={changeSystem} onSelectSize={setSizeCode} />
+            )}
+          </div>
           <div className="flex flex-wrap gap-2">
             {sizes.map((s) => {
               const v = variantsForColor.find((x) => x.sizeCode === s);
@@ -110,7 +140,8 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
                     s === sizeCode ? "border-ink bg-ink text-paper" : "border-line bg-white hover:border-ink"
                   } disabled:cursor-not-allowed disabled:border-dashed disabled:text-ink-soft disabled:line-through`}
                 >
-                  {sizeLabel(t, s)}
+                  {regionalLabel(s) ?? sizeLabel(t, s)}
+                  {regionalLabel(s) && regionalLabel(s) !== s && <span className="ml-1 text-xs font-normal opacity-70">{sizeLabel(t, s)}</span>}
                 </button>
               );
             })}
