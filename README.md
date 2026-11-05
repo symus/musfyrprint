@@ -1,4 +1,4 @@
-# musfyr print
+# Musfir Print
 
 **Create It. Wear It. Stick It.** — a custom T-shirt, apparel and sticker e-commerce platform, built to launch in
 Poland and expand to the EU, UK, India, China and the US without a rewrite.

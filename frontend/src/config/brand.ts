@@ -4,8 +4,8 @@
  * /api/v1/site/config for e-mails and integrations. Translatable copy (tagline, hero) lives in src/i18n/messages.
  */
 export const brand = {
-  name: process.env.NEXT_PUBLIC_BRAND_NAME ?? "musfyr print",
-  shortName: process.env.NEXT_PUBLIC_BRAND_SHORT_NAME ?? "musfyr",
+  name: process.env.NEXT_PUBLIC_BRAND_NAME ?? "Musfir Print",
+  shortName: process.env.NEXT_PUBLIC_BRAND_SHORT_NAME ?? "Musfir",
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "hello@example.com",
   supportPhone: process.env.NEXT_PUBLIC_SUPPORT_PHONE ?? "+48 000 000 000",
   address: process.env.NEXT_PUBLIC_COMPANY_ADDRESS ?? "Registered business address to be configured",

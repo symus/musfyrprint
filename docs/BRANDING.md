@@ -1,6 +1,6 @@
 # Re-branding & market configuration
 
-The working name **musfyr print** is configuration, not code.
+The working name **Musfir Print** is configuration, not code.
 
 ## Brand
 

@@ -16,7 +16,7 @@ Both images are stateless; scale horizontally after moving rate limiting/caches 
 ```bash
 docker build -t musfyr/backend ./backend
 docker build -t musfyr/frontend \
-  --build-arg NEXT_PUBLIC_BRAND_NAME="musfyr print" \
+  --build-arg NEXT_PUBLIC_BRAND_NAME="Musfir Print" \
   --build-arg NEXT_PUBLIC_SITE_URL="https://shop.example.com" ./frontend
 
 docker run -e SPRING_PROFILES_ACTIVE=prod -e DB_URL=… -e DB_USERNAME=… -e DB_PASSWORD=… \

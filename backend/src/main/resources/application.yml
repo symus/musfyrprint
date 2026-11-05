@@ -68,7 +68,7 @@ logging:
 
 app:
   brand:
-    name: ${BRAND_NAME:musfyr print}
+    name: ${BRAND_NAME:Musfir Print}
     tagline: ${BRAND_TAGLINE:Create It. Wear It. Stick It.}
     support-email: ${BRAND_SUPPORT_EMAIL:hello@example.com}
     support-phone: ${BRAND_SUPPORT_PHONE:+48 000 000 000}

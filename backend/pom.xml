@@ -14,8 +14,8 @@
     <groupId>com.musfyr</groupId>
     <artifactId>print-backend</artifactId>
     <version>0.1.0-SNAPSHOT</version>
-    <name>musfyr print backend</name>
-    <description>REST API for the musfyr print custom apparel and sticker platform</description>
+    <name>Musfir Print backend</name>
+    <description>REST API for the Musfir Print custom apparel and sticker platform</description>
 
     <properties>
         <java.version>21</java.version>
