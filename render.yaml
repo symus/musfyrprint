@@ -1,0 +1,65 @@
+# Render Blueprint: Musfir Print preview deployment (backend + frontend + PostgreSQL).
+# Setup guide: docs/DEPLOY-RENDER.md. Values marked `sync: false` are asked for when you create the Blueprint.
+services:
+  - type: web
+    name: musfir-backend
+    runtime: docker
+    plan: free            # Spring Boot on 512 MB works but starts slowly; "starter" is recommended for real use
+    region: frankfurt
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health/readiness
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod,demo  # use "prod" (no sample catalogue) for the real shop
+      - key: PORT
+        value: "8080"
+      - key: MANAGEMENT_PORT  # health checks must be on the public port
+        value: "8080"
+      - key: DB_HOST
+        fromDatabase: { name: musfir-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: musfir-db, property: port }
+      - key: DB_NAME
+        fromDatabase: { name: musfir-db, property: database }
+      - key: DB_USERNAME
+        fromDatabase: { name: musfir-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: musfir-db, property: password }
+      - key: DB_POOL_SIZE
+        value: "5"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: BOOTSTRAP_ADMIN_EMAIL
+        sync: false
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
+      - key: BRAND_SUPPORT_EMAIL
+        sync: false
+
+  - type: web
+    name: musfir-frontend
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    healthCheckPath: /robots.txt
+    envVars:
+      # Public URL of musfir-backend, e.g. https://musfir-backend.onrender.com (shown on its Render page).
+      - key: API_INTERNAL_URL
+        sync: false
+      # Public URL of this frontend, e.g. https://musfir-frontend.onrender.com (used for SEO links and the sitemap).
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false
+      - key: NEXT_PUBLIC_BRAND_NAME
+        value: Musfir Print
+      - key: NEXT_PUBLIC_SUPPORT_EMAIL
+        sync: false
+
+databases:
+  - name: musfir-db
+    databaseName: musfir
+    user: musfir
+    plan: free
+    region: frankfurt

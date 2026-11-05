@@ -4,7 +4,8 @@ spring:
   profiles:
     default: dev
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/musfyr}
+    # Either a full JDBC URL, or host/port/name parts (e.g. from a hosting platform's database settings).
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:musfyr}}
     username: ${DB_USERNAME:musfyr}
     password: ${DB_PASSWORD:musfyr}
     hikari:
@@ -117,6 +118,16 @@ app:
   bootstrap-admin:
     email: ${BOOTSTRAP_ADMIN_EMAIL:admin@musfyr.local}
     password: ${BOOTSTRAP_ADMIN_PASSWORD:ChangeMe-Admin-2026!}
+
+---
+# "demo": production settings plus the sample catalogue, for preview deployments (e.g. prod,demo on Render).
+spring:
+  config:
+    activate:
+      on-profile: demo
+  flyway:
+    locations: classpath:db/migration,classpath:db/seed
+    out-of-order: true
 
 ---
 spring:

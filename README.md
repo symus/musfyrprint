@@ -71,5 +71,6 @@ cd frontend && npx playwright install chromium && npm run e2e
 - [API guide with examples](docs/API.md)
 - [Roadmap, phases & open TODOs](docs/ROADMAP.md)
 - [Re-branding, currency, locale & tax configuration](docs/BRANDING.md)
+- [Deploy to Render (step by step)](docs/DEPLOY-RENDER.md)
 - [Deployment & production-readiness checklist](docs/DEPLOYMENT.md)
 - [Integrations status & setup (OAuth, payments, e-mail, SMS, shipping)](docs/INTEGRATIONS.md)
