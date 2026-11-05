@@ -61,12 +61,28 @@ Decisions for Phase 2 (no licensed 3D models or print supplier yet):
 Preview accuracy limits to communicate to customers: fabric folds and stretch are simulated, print curvature on
 seams is approximate, and screen colours differ from ink on fabric.
 
-## Phase 3 — Commerce ⬜
+## Phase 3 — Commerce 🟡 (Przelewy24 needs sandbox keys)
 
-Customer accounts (email verification, password reset, Google/Apple/Facebook OIDC, phone OTP, refresh tokens with
-rotation & revocation, GDPR export/deletion), guest checkout, cart, single authoritative `PricingService`
-(variant + options + print zones + quantity tiers + promotions + gift cards + shipping + VAT/OSS), checkout,
-Stripe/PayPal/Przelewy24/BLIK via a `PaymentProvider` SPI with signed, idempotent webhooks, orders and order history.
+**Done:**
+* ✅ Cart for guests and customers (cookie cart, merged on sign-in/registration), quantities, designs with their
+  edit token, stock and print-check warnings, discount codes with clear error reasons.
+* ✅ One pricing engine (`PriceCalculator`): variant + options + print areas + quantity tiers (10/25/50/100 →
+  5/10/15/20 %) + promotions + delivery. The browser only displays server totals.
+* ✅ Tax modes: `EXEMPT` (art. 113, the default while not VAT-registered) and `STANDARD` (VAT included).
+* ✅ Checkout: idempotent (`Idempotency-Key`), Polish address validation, InPost Paczkomat / InPost courier /
+  DPD, terms consent, order snapshots (prices, design documents, address).
+* ✅ Przelewy24 REST v1 client (register, signed notifications, mandatory verify, refunds) and a simulator; payment
+  return page that polls the server status, payment retry for unpaid orders.
+* ✅ Accounts: registration, e-mail verification, password reset, profile, saved addresses, order history, deletion
+  request. Guests get a secret order link (checkout page and confirmation e-mail).
+* ✅ Admin: order list/search, order detail with payment events, refund request and confirmation (audited).
+* ✅ Tests: pricing, signatures, full HTTP checkout flow through the simulator, account flow; E2E guest checkout,
+  declined-then-retried payment, studio → cart, registration with cart merge, axe checks.
+
+**Waiting for you:** Przelewy24 sandbox/production keys, SMTP settings (until then e-mails are only logged).
+
+**Deferred:** Google/Apple/Facebook sign-in and phone OTP (need provider credentials), refresh-token rotation,
+gift cards, VAT OSS for EU shipping, Stripe/PayPal, GDPR data export (deletion requests are recorded).
 
 ## Phase 4 — Fulfilment ⬜
 

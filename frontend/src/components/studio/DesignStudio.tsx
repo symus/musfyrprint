@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
-  AlertTriangle, CheckCircle2, Download, Loader2, Minus, Plus, Redo2, Save, Shapes, Type, Undo2, Upload,
+  AlertTriangle, CheckCircle2, ShoppingBag, Download, Loader2, Minus, Plus, Redo2, Save, Shapes, Type, Undo2, Upload,
 } from "lucide-react";
 
 import { apiFetch, postJson } from "@/lib/api/client";
@@ -17,6 +17,7 @@ import { Editor } from "./Editor";
 import { LayersPanel, PropertiesPanel, TemplatesPanel, type TemplateSummary } from "./Panels";
 import type { ShapeKind } from "./shapes";
 import { findDraft, rememberDraft } from "./storage";
+import { addToCart } from "@/components/commerce/cart-client";
 import type { DesignDocument, PrintWarning, Zone } from "./types";
 
 // three.js is large: load the 3D preview only when it is opened.
@@ -158,8 +159,8 @@ export function DesignStudio({ product, initialColor, initialSize, designId }: {
     }
   }, [editor, rights, s]);
 
-  const save = useCallback(async (asCopy = false) => {
-    if (!editor) return;
+  const save = useCallback(async (asCopy = false): Promise<SavedState | null> => {
+    if (!editor) return null;
     setSaveState("saving");
     const body = { productSlug: product.slug, colorCode: color, sizeCode: size, name: product.name, document: editor.document() };
     try {
@@ -169,19 +170,47 @@ export function DesignStudio({ product, initialColor, initialSize, designId }: {
           headers: { "X-Design-Token": saved.token },
           body: JSON.stringify({ ...body, version: saved.version }),
         });
-        setSaved({ ...saved, version: d.version });
+        const next = { ...saved, version: d.version };
+        setSaved(next);
+        setSaveState("saved");
+        return next;
       } else {
         const created = await postJson<{ design: { id: string; version: number }; editToken: string }>("/api/v1/designs", body);
         const next = { id: created.design.id, token: created.editToken, version: created.design.version };
         setSaved(next);
         rememberDraft({ id: next.id, token: next.token, productSlug: product.slug, name: product.name, savedAt: new Date().toISOString() });
         window.history.replaceState(null, "", href(`/design/${product.slug}?design=${next.id}`));
+        setSaveState("saved");
+        return next;
       }
-      setSaveState("saved");
     } catch (err) {
       setSaveState(err instanceof ApiError && err.status === 409 ? "conflict" : "error");
+      return null;
     }
   }, [editor, product, color, size, saved, href]);
+
+  // Add to cart = save the latest version, then add it with its edit token (the server re-checks print quality).
+  const [quantity, setQuantity] = useState(1);
+  const [cartState, setCartState] = useState<{ kind: "idle" | "busy" | "done" | "error"; message?: string }>({ kind: "idle" });
+  const addDesignToCart = useCallback(async () => {
+    const sizeCode = size ?? (product.sizes.length === 1 ? product.sizes[0].code : null);
+    if (!sizeCode) {
+      setCartState({ kind: "error", message: t.cart.chooseSize });
+      return;
+    }
+    setCartState({ kind: "busy" });
+    const current = await save(false);
+    if (!current) {
+      setCartState({ kind: "error", message: s.saveError });
+      return;
+    }
+    try {
+      await addToCart({ productSlug: product.slug, colorCode: color, sizeCode, quantity, designId: current.id, designToken: current.token });
+      setCartState({ kind: "done" });
+    } catch (e) {
+      setCartState({ kind: "error", message: e instanceof ApiError ? (e.problem.detail ?? t.checkout.errorGeneric) : t.checkout.errorGeneric });
+    }
+  }, [size, product, save, color, quantity, t, s]);
 
   const exportZones = useCallback(async () => {
     if (!editor) return;
@@ -363,6 +392,22 @@ export function DesignStudio({ product, initialColor, initialSize, designId }: {
                 ))}
               </ul>
             )}
+          </section>
+          <section className="card space-y-3 p-4">
+            <label className="flex items-center justify-between gap-2 text-sm font-semibold">
+              {t.cart.quantity}
+              <input type="number" min={1} max={10000} value={quantity} onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
+                className="input !w-24 !py-2" />
+            </label>
+            <button type="button" className="btn btn-violet w-full !py-2"
+              disabled={!editor || cartState.kind === "busy" || warnings.some((w) => w.severity === "ERROR")} onClick={addDesignToCart}>
+              {cartState.kind === "busy" ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <ShoppingBag size={18} aria-hidden="true" />}
+              {cartState.kind === "busy" ? t.cart.adding : t.cart.add}
+            </button>
+            <div aria-live="polite" className="text-sm">
+              {cartState.kind === "done" && <p className="font-semibold text-success">{t.cart.added} · <Link href="/cart" className="underline">{t.cart.open}</Link></p>}
+              {cartState.kind === "error" && <p role="alert" className="text-danger">{cartState.message}</p>}
+            </div>
           </section>
           <section className="card space-y-2 p-4">
             <button type="button" className="btn btn-secondary w-full !py-2" disabled={!editor || warnings.some((w) => w.code === "EMPTY_DESIGN")} onClick={exportZones}>

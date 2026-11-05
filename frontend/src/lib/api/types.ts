@@ -233,3 +233,112 @@ export interface SizeRecommendation {
   alternativeSizeCode: string | null;
   reasons: string[];
 }
+
+// ------------------------------------------------------------------------------------------- commerce
+
+export interface ShippingMethod {
+  code: string;
+  name: string;
+  carrier: string;
+  priceMinor: number;
+  currency: string;
+  requiresPickupPoint: boolean;
+  daysMin: number;
+  daysMax: number;
+}
+
+export interface CartLine {
+  id: string;
+  variantId: string;
+  productSlug: string;
+  productName: string;
+  garmentType: string;
+  sku: string;
+  colorCode: string | null;
+  colorName: string | null;
+  colorHex: string | null;
+  sizeCode: string;
+  quantity: number;
+  options: Record<string, string>;
+  designId: string | null;
+  printZones: string[];
+  unitPrice: Money;
+  lineTotal: Money;
+  volumePercent: number;
+  available: boolean;
+  stockShortfall: number;
+  designErrors: { zone: string | null; code: string; severity: string; value: number | null }[];
+}
+
+export interface Cart {
+  id: string | null;
+  lines: CartLine[];
+  itemCount: number;
+  subtotal: Money;
+  promotionCode: string | null;
+  promotionError: string | null;
+  discount: Money;
+  shipping: Money;
+  total: Money;
+  taxMode: "EXEMPT" | "STANDARD";
+  taxIncluded: Money;
+  shippingMethods: ShippingMethod[];
+  shippingMethod: string | null;
+}
+
+export interface OrderView {
+  number: string;
+  status: string;
+  email: string;
+  createdAt: string;
+  paidAt: string | null;
+  subtotal: Money;
+  discount: Money;
+  shipping: Money;
+  total: Money;
+  taxMode: string;
+  taxIncluded: Money;
+  promotionCode: string | null;
+  shippingMethod: string;
+  pickupPoint: string | null;
+  shippingAddress: Record<string, string | null>;
+  items: { productName: string; sku: string; colorCode: string | null; sizeCode: string; quantity: number; unitPrice: Money; lineTotal: Money; options: Record<string, unknown>; printZones: string[]; designId: string | null }[];
+  events: { status: string; note: string | null; at: string }[];
+  canPay: boolean;
+  paymentStatus: string | null;
+}
+
+export interface OrderSummary {
+  number: string;
+  status: string;
+  email: string;
+  total: Money;
+  itemCount: number;
+  createdAt: string;
+}
+
+export interface Profile {
+  id: string;
+  email: string;
+  displayName: string;
+  phone: string | null;
+  emailVerified: boolean;
+  marketingOptIn: boolean;
+  preferredSizeSystem: string | null;
+  preferredLocale: string | null;
+  deletionRequested: boolean;
+  roles: string[];
+}
+
+export interface Address {
+  id: string;
+  fullName: string;
+  company: string | null;
+  line1: string;
+  line2: string | null;
+  postalCode: string;
+  city: string;
+  country: string;
+  phone: string | null;
+  isDefault: boolean;
+}

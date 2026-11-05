@@ -170,14 +170,23 @@ public class PaymentService {
 
     private void sendConfirmation(UUID orderId) {
         try {
-            record O(String number, String email, String locale, long total, String currency) {
+            record O(String number, String email, String locale, long total, String currency, boolean guest) {
             }
-            O o = jdbc.sql("SELECT number, email, locale, total_minor, currency FROM orders WHERE id = :id").param("id", orderId)
-                    .query((rs, i) -> new O(rs.getString(1), rs.getString(2), rs.getString(3), rs.getLong(4), rs.getString(5))).single();
+            O o = jdbc.sql("SELECT number, email, locale, total_minor, currency, user_id IS NULL FROM orders WHERE id = :id").param("id", orderId)
+                    .query((rs, i) -> new O(rs.getString(1), rs.getString(2), rs.getString(3), rs.getLong(4), rs.getString(5), rs.getBoolean(6))).single();
             List<String> lines = jdbc.sql("SELECT quantity || ' × ' || product_name || ' (' || size_code || ')' FROM order_items WHERE order_id = :id")
                     .param("id", orderId).query(String.class).list();
             String total = String.format("%d,%02d %s", o.total() / 100, o.total() % 100, o.currency());
-            String link = shop.publicSiteUrl() + "/" + o.locale() + "/account/orders/" + o.number();
+            String link;
+            if (o.guest()) {
+                // Guests have no account: give them their own secret order link (only its hash is stored).
+                String token = com.musfyr.print.commerce.Tokens.random(24);
+                jdbc.sql("UPDATE orders SET email_token_hash = :h WHERE id = :id").param("h", com.musfyr.print.commerce.Tokens.hash(token))
+                        .param("id", orderId).update();
+                link = shop.publicSiteUrl() + "/" + o.locale() + "/orders/" + o.number() + "?t=" + token;
+            } else {
+                link = shop.publicSiteUrl() + "/" + o.locale() + "/account/orders/" + o.number();
+            }
             notifier.send(emails.orderConfirmed(o.email(), o.locale(), o.number(), total, lines, link));
         } catch (Exception e) {
             log.error("Could not send order confirmation for {}", orderId, e);

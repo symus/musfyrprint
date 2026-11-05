@@ -51,7 +51,7 @@ test.describe("storefront", () => {
     await page.goto("/en/products/classic-unisex-tee");
     await expect(page.getByRole("heading", { level: 1, name: "Classic Unisex Tee" })).toBeVisible();
     await page.getByRole("button", { name: "Navy" }).click();
-    await page.getByRole("button", { name: "2XL" }).click();
+    await page.getByRole("button", { name: /^(2XL|.+ \(2XL\))$/ }).click();
     await expect(page.getByText(/In stock · SKU CUT-NAVY-2XL/)).toBeVisible();
     await expect(page.getByText("PLN 65.00").first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Personalise this product/ })).toHaveAttribute("href", /color=navy&size=2XL/);

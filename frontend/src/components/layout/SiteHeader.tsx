@@ -7,6 +7,7 @@ import { getI18n } from "@/i18n/server";
 import { getLocalized } from "@/lib/api/localized";
 import type { CategoryView } from "@/lib/api/types";
 import { LanguageSwitcher, LanguageSwitcherFallback } from "./LanguageSwitcher";
+import { HeaderAccount, HeaderCart } from "@/components/commerce/HeaderWidgets";
 import { MobileMenu } from "./MobileMenu";
 import { SearchBox } from "./SearchBox";
 
@@ -22,7 +23,7 @@ export async function SiteHeader() {
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper">
         {t.nav.skip}
       </a>
-      <div className="container-page flex h-16 items-center gap-3">
+      <div className="container-page flex h-16 items-center gap-2 sm:gap-3">
         <Link href="/" aria-label={t.nav.home} className="shrink-0"><Logo /></Link>
         <Suspense fallback={<nav className="hidden flex-1 xl:block xl:mr-auto" aria-label={t.nav.main} />}>
           <CategoryNav extra={staticLinks.slice(1, 2)} label={t.nav.main} />
@@ -31,9 +32,12 @@ export async function SiteHeader() {
         <Suspense fallback={<LanguageSwitcherFallback locale={locale} />}>
           <LanguageSwitcher />
         </Suspense>
-        <Link href="/design" className="btn btn-primary hidden whitespace-nowrap !py-2 sm:inline-flex">
-          <Palette size={18} aria-hidden="true" /> {t.nav.design}
+        {/* Icon-only between xl and 2xl, where the category nav needs the room. */}
+        <Link href="/design" className="btn btn-primary hidden whitespace-nowrap !py-2 lg:inline-flex xl:max-2xl:!px-3" title={t.nav.design}>
+          <Palette size={18} aria-hidden="true" /> <span className="xl:max-2xl:sr-only">{t.nav.design}</span>
         </Link>
+        <HeaderAccount />
+        <HeaderCart />
         <Suspense fallback={<MobileMenu links={staticLinks} />}>
           <MobileNav staticLinks={staticLinks} />
         </Suspense>

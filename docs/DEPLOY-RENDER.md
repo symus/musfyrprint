@@ -15,13 +15,22 @@
    | `BOOTSTRAP_ADMIN_PASSWORD` | A long, unique password (12+ characters) |
    | `BRAND_SUPPORT_EMAIL`, `NEXT_PUBLIC_SUPPORT_EMAIL` | The shop's contact e-mail |
    | `API_INTERNAL_URL` | `https://musfir-backend.onrender.com` |
-   | `NEXT_PUBLIC_SITE_URL` | `https://musfir-frontend.onrender.com` |
+   | `NEXT_PUBLIC_SITE_URL`, `PUBLIC_SITE_URL` | `https://musfir-frontend.onrender.com` |
+   | `PUBLIC_API_URL` | `https://musfir-backend.onrender.com` (the test payment page and Przelewy24 notifications use it) |
 
    If Render shows a different address for a service (it adds a suffix when a name is taken), use the address shown
    on that service's page, update the two URL variables, and redeploy the frontend.
 4. Click **Apply**. The first build takes 5–15 minutes. When both services show **Live**, open the frontend URL.
 5. Sign in at `/admin` with the e-mail and password from step 3. Then delete `BOOTSTRAP_ADMIN_PASSWORD` from the
    backend's Environment page – it is only needed for the first start.
+
+## Payments and e-mail in the demo
+
+* Checkout works end to end with the **built-in Przelewy24 test page** (`P24_MODE=SIMULATOR`): you can pay or
+  decline, and no money moves. The page is clearly marked as a test.
+* E-mails (order confirmation, verification, password reset) are **only written to the backend log** until you
+  add SMTP settings. Open backend → Logs to read a verification link.
+* For real payments follow "Przelewy24 → Going live" in `docs/INTEGRATIONS.md` (sandbox first).
 
 ## What to expect on the free plan
 

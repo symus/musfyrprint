@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, LogOut, MessageSquareQuote, Package, ScrollText } from "lucide-react";
+import { LayoutDashboard, LogOut, MessageSquareQuote, Package, ReceiptText, ScrollText } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
 import { postJson } from "@/lib/api/client";
@@ -11,6 +11,7 @@ import { hasRole, useStaffSession } from "./useSession";
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "DESIGNER", "PRODUCTION", "SUPPORT"] },
   { href: "/admin/products", label: "Products", icon: Package, roles: ["ADMIN", "DESIGNER"] },
+  { href: "/admin/orders", label: "Orders", icon: ReceiptText, roles: ["ADMIN", "PRODUCTION", "SUPPORT"] },
   { href: "/admin/quotes", label: "Quote requests", icon: MessageSquareQuote, roles: ["ADMIN", "SUPPORT"] },
   { href: "/admin/audit", label: "Audit log", icon: ScrollText, roles: ["ADMIN"] },
 ];

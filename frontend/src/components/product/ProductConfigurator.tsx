@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Clock, Info, Palette, Printer } from "lucide-react";
+import { Clock, Info, Palette, Printer, ShoppingBag } from "lucide-react";
 
 import type { ProductDetail, SizeChart, SizeSystem } from "@/lib/api/types";
 import { SizeGuide } from "@/components/sizing/SizeGuide";
+import { addToCart } from "@/components/commerce/cart-client";
+import { ApiError } from "@/lib/api/errors";
 import { defaultSystem, loadSystem, saveSystem } from "@/components/sizing/units";
 import { Link, useI18n } from "@/i18n/client";
 import { fmt } from "@/i18n/format";
@@ -60,6 +62,21 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
     [product.variants, colorCode],
   );
   const variant = variantsForColor.find((v) => v.sizeCode === sizeCode) ?? null;
+  const [quantity, setQuantity] = useState(1);
+  const [cartState, setCartState] = useState<{ kind: "idle" | "busy" | "done" | "error"; message?: string }>({ kind: "idle" });
+  const onAdd = async () => {
+    if (!sizeCode) {
+      setCartState({ kind: "error", message: t.cart.chooseSize });
+      return;
+    }
+    setCartState({ kind: "busy" });
+    try {
+      await addToCart({ productSlug: product.slug, colorCode, sizeCode, quantity, options });
+      setCartState({ kind: "done" });
+    } catch (e) {
+      setCartState({ kind: "error", message: e instanceof ApiError ? (e.problem.detail ?? t.checkout.errorGeneric) : t.checkout.errorGeneric });
+    }
+  };
   const optionDelta = product.optionGroups.reduce(
     (sum, g) => sum + (g.values.find((v) => v.code === options[g.code])?.priceDeltaMinor ?? 0),
     0,
@@ -136,6 +153,7 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
                   className={`min-w-14 rounded-xl border-2 px-3 py-2 text-sm font-semibold transition ${
                     s === sizeCode ? "border-ink bg-ink text-paper" : "border-line bg-white hover:border-ink"
                   } disabled:cursor-not-allowed disabled:border-dashed disabled:text-ink-soft disabled:line-through`}
+                  aria-label={regionalLabel(s) && regionalLabel(s) !== s ? `${regionalLabel(s)} (${sizeLabel(t, s)})` : undefined}
                 >
                   {regionalLabel(s) ?? sizeLabel(t, s)}
                   {regionalLabel(s) && regionalLabel(s) !== s && <span className="ml-1 text-xs font-normal opacity-70">{sizeLabel(t, s)}</span>}
@@ -178,7 +196,21 @@ export function ProductConfigurator({ product }: { product: ProductDetail }) {
           </fieldset>
         ))}
 
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            {t.cart.quantity}
+            <input type="number" min={1} max={10000} value={quantity} onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
+              className="input !w-20 !py-2" />
+          </label>
+          <button type="button" className="btn btn-violet" onClick={onAdd} disabled={cartState.kind === "busy"}>
+            <ShoppingBag size={18} aria-hidden="true" /> {cartState.kind === "busy" ? t.cart.adding : t.cart.add}
+          </button>
+        </div>
+        <div aria-live="polite" className="mt-2 text-sm">
+          {cartState.kind === "done" && <p className="font-semibold text-success">{t.cart.added} · <Link href="/cart" className="underline">{t.cart.open}</Link></p>}
+          {cartState.kind === "error" && <p role="alert" className="text-danger">{cartState.message}</p>}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-3">
           {product.customizable && (
             <Link href={designHref} className="btn btn-primary text-lg">
               <Palette size={20} aria-hidden="true" /> {t.product.personalise}

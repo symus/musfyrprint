@@ -36,6 +36,19 @@ services:
         sync: false
       - key: BRAND_SUPPORT_EMAIL
         sync: false
+      # Public URLs (shown on each service's Render page), used in e-mail links and Przelewy24 return/notify URLs.
+      - key: PUBLIC_SITE_URL
+        sync: false
+      - key: PUBLIC_API_URL
+        sync: false
+      - key: TAX_MODE
+        value: EXEMPT  # switch to STANDARD once VAT-registered
+      # Payments: the demo profile uses the built-in Przelewy24 test page (no money moves). For real payments add
+      # P24_MODE=SANDBOX (or PRODUCTION), P24_MERCHANT_ID, P24_POS_ID, P24_API_KEY and P24_CRC_KEY on the
+      # backend's Environment page. E-mail: add SPRING_MAIL_HOST/PORT/USERNAME/PASSWORD and MAIL_FROM there;
+      # without them e-mails are only written to the log. See docs/INTEGRATIONS.md.
+      - key: P24_MODE
+        value: SIMULATOR
 
   - type: web
     name: musfir-frontend

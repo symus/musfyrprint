@@ -57,6 +57,10 @@ management:
       probes:
         enabled: true
       show-details: never
+  health:
+    # An unreachable SMTP server must not take the shop offline; failed sends are logged per message.
+    mail:
+      enabled: false
   info:
     env:
       enabled: true

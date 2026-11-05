@@ -3,7 +3,7 @@ package com.musfyr.print.notify;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
@@ -12,7 +12,8 @@ import com.musfyr.print.commerce.ShopProperties;
 
 /** SMTP delivery, active when spring.mail.host is set (MAIL_HOST). */
 @Component
-@ConditionalOnProperty(prefix = "spring.mail", name = "host")
+// Active only with a non-blank SMTP host: an empty SPRING_MAIL_HOST (e.g. from .env) keeps the log-only notifier.
+@ConditionalOnExpression("!'${spring.mail.host:}'.isBlank()")
 public class MailNotifier implements Notifier {
 
     private static final Logger log = LoggerFactory.getLogger(MailNotifier.class);

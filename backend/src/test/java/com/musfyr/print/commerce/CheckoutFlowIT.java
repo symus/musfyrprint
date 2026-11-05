@@ -133,7 +133,12 @@ class CheckoutFlowIT {
         assertThat(stock("CUT-BLACK-M")).isEqualTo(stockBefore - 2);
         assertThat(jdbc.sql("SELECT redemptions FROM promotions WHERE code = 'WELCOME10'").query(Integer.class).single()).isEqualTo(1);
         assertThat((Integer) JsonPath.read(send("GET", "/api/v1/cart", null).body(), "$.itemCount")).isZero();
-        assertThat(TestDatabaseConfig.SENT).anyMatch(e -> e.to().equals("klient@example.com") && e.subject().contains(number));
+        var confirmation = TestDatabaseConfig.SENT.stream()
+                .filter(e -> e.to().equals("klient@example.com") && e.subject().contains(number)).findFirst().orElseThrow();
+        // Guests get their own order link in the e-mail; it opens the order like the checkout token does.
+        var link = java.util.regex.Pattern.compile("/pl/orders/" + number + "\\?t=([A-Za-z0-9_-]+)").matcher(confirmation.text());
+        assertThat(link.find()).isTrue();
+        assertThat(send("GET", "/api/v1/orders/" + number + "?token=" + link.group(1), null).statusCode()).isEqualTo(200);
 
         // Duplicate notification: acknowledged, nothing changes
         record S(String session, long orderId) {

@@ -170,12 +170,12 @@ public class CheckoutService {
 
     /** Retry payment for an unpaid order (guest token or account owner). */
     public PaymentService.Redirect retryPayment(String number, String token, UUID userId) {
-        record O(UUID id, String hash, UUID user) {
+        record O(UUID id, String hash, String emailHash, UUID user) {
         }
-        O o = jdbc.sql("SELECT id, access_token_hash, user_id FROM orders WHERE number = :n").param("n", number)
-                .query((rs, i) -> new O(rs.getObject(1, UUID.class), rs.getString(2), rs.getObject(3, UUID.class)))
+        O o = jdbc.sql("SELECT id, access_token_hash, email_token_hash, user_id FROM orders WHERE number = :n").param("n", number)
+                .query((rs, i) -> new O(rs.getObject(1, UUID.class), rs.getString(2), rs.getString(3), rs.getObject(4, UUID.class)))
                 .optional().orElseThrow(() -> new com.musfyr.print.common.error.NotFoundException("Order", number));
-        boolean byToken = Tokens.matchesHash(o.hash(), token);
+        boolean byToken = Tokens.matchesHash(o.hash(), token) || Tokens.matchesHash(o.emailHash(), token);
         boolean byAccount = userId != null && userId.equals(o.user());
         if (!byToken && !byAccount) {
             throw new com.musfyr.print.common.error.NotFoundException("Order", number);

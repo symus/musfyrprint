@@ -48,14 +48,14 @@ public class OrderService {
 
     record Head(UUID id, String number, String status, String email, String currency, long subtotal, long discount, long shipping,
                 long tax, long total, String taxMode, String promo, String shipMethod, String pickup, String address,
-                Instant created, Instant paid, String accessHash, UUID userId) {
+                Instant created, Instant paid, String accessHash, String emailHash, UUID userId) {
     }
 
     Head head(String number) {
         return jdbc.sql("""
                 SELECT id, number, status, email, currency, subtotal_minor, discount_minor, shipping_minor, tax_minor, total_minor,
                        tax_mode, promotion_code, shipping_method_code, pickup_point, shipping_address::text AS address,
-                       created_at, paid_at, access_token_hash, user_id
+                       created_at, paid_at, access_token_hash, email_token_hash, user_id
                 FROM orders WHERE number = :n""")
                 .param("n", number)
                 .query((rs, i) -> new Head(rs.getObject("id", UUID.class), rs.getString("number"), rs.getString("status"),
@@ -64,14 +64,14 @@ public class OrderService {
                         rs.getString("promotion_code"), rs.getString("shipping_method_code"), rs.getString("pickup_point"),
                         rs.getString("address"), rs.getTimestamp("created_at").toInstant(),
                         rs.getTimestamp("paid_at") == null ? null : rs.getTimestamp("paid_at").toInstant(),
-                        rs.getString("access_token_hash"), rs.getObject("user_id", UUID.class)))
+                        rs.getString("access_token_hash"), rs.getString("email_token_hash"), rs.getObject("user_id", UUID.class)))
                 .optional().orElseThrow(() -> new NotFoundException("Order", number));
     }
 
     /** Guest access with the secret link token; also works for the account owner. */
     public OrderView forGuest(String number, String token) {
         Head h = head(number);
-        if (!Tokens.matchesHash(h.accessHash(), token)) {
+        if (!Tokens.matchesHash(h.accessHash(), token) && !Tokens.matchesHash(h.emailHash(), token)) {
             throw new NotFoundException("Order", number);
         }
         return view(h);
