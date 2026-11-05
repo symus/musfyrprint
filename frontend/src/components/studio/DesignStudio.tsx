@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   AlertTriangle, CheckCircle2, Download, Loader2, Minus, Plus, Redo2, Save, Shapes, Type, Undo2, Upload,
 } from "lucide-react";
@@ -17,6 +18,9 @@ import { LayersPanel, PropertiesPanel, TemplatesPanel, type TemplateSummary } fr
 import type { ShapeKind } from "./shapes";
 import { findDraft, rememberDraft } from "./storage";
 import type { DesignDocument, PrintWarning, Zone } from "./types";
+
+// three.js is large: load the 3D preview only when it is opened.
+const Preview3DPanel = dynamic(() => import("@/components/preview3d/Preview3DPanel"), { ssr: false });
 
 type Tab = "add" | "templates" | "layers" | "edit";
 
@@ -51,6 +55,7 @@ export function DesignStudio({ product, initialColor, initialSize, designId }: {
   const [templates, setTemplates] = useState<TemplateSummary[]>([]);
   const [rights, setRights] = useState(false);
   const [upload, setUpload] = useState<{ busy: boolean; error: string | null }>({ busy: false, error: null });
+  const [show3d, setShow3d] = useState(false);
   const colorHex = product.colors.find((c) => c.code === color)?.hex ?? "#FFFFFF";
 
   // Create the editor (and load a saved draft if one was requested and this device holds its token).
@@ -326,6 +331,19 @@ export function DesignStudio({ product, initialColor, initialSize, designId }: {
                   {product.sizes.map((x) => <option key={x.code} value={x.code} disabled={!x.available}>{sizeLabel(t, x.code)}</option>)}
                 </select>
               </label>
+            )}
+          </section>
+          <section className="card p-4">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-ink-soft">{s.preview3d}</h2>
+              <button type="button" className="text-sm font-semibold text-violet underline" aria-expanded={show3d} onClick={() => setShow3d((v) => !v)}>
+                {show3d ? s.hide3d : s.show3d}
+              </button>
+            </div>
+            {show3d && editor && (
+              <div className="mt-3">
+                <Preview3DPanel editor={editor} garmentType={product.garmentType} colorHex={colorHex} slug={product.slug} sizeCode={size} />
+              </div>
             )}
           </section>
           <section className={`card p-4 ${tab === "edit" ? "" : "hidden lg:block"}`}>

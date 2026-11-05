@@ -4,7 +4,7 @@ import { useId } from "react";
  * Lightweight vector product illustrations used until product photography / 3D renders are uploaded.
  * Colour comes from the product's real colour configuration.
  */
-const SILHOUETTES: Record<string, string> = {
+export const SILHOUETTES: Record<string, string> = {
   TSHIRT:
     "M70 30 L95 18 Q120 34 145 18 L170 30 L205 62 L182 92 L162 80 L162 210 Q120 218 78 210 L78 80 L58 92 L35 62 Z",
   LONGSLEEVE:

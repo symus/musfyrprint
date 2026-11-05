@@ -67,3 +67,21 @@ test.describe("design studio", () => {
     expect((await download).suggestedFilename()).toBe("die-cut-vinyl-sticker-full.png");
   });
 });
+
+test.describe("3D preview", () => {
+  test("opens with view controls, honest accuracy note and no errors", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    await page.goto("/en/design/classic-unisex-tee?color=coral&size=L");
+    await page.getByRole("button", { name: /Birthday star/ }).click();
+    await page.getByRole("button", { name: "Show 3D preview" }).click();
+    const preview = page.getByRole("img", { name: "3D preview" });
+    await expect(preview).toBeVisible();
+    // WebGL canvas or, on devices without WebGL, the flat fallback
+    await expect(preview.locator("canvas").or(page.getByText(/3D preview isn't available/))).toBeVisible();
+    await expect(page.getByText(/Approximate preview on a generic garment model/)).toBeVisible();
+    await page.getByRole("group", { name: "3D preview" }).getByRole("button", { name: "Back" }).click();
+    await page.getByRole("group", { name: "3D preview" }).getByRole("button", { name: "Side" }).click();
+    expect(errors).toEqual([]);
+  });
+});
